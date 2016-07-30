@@ -31,42 +31,20 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../js/helper.js" as Helper
+import "../js/UIConstants.js" as UIConstants
 
-ListItem {
-    id: suggestionDelegate
-    width: ListView.view.width
-    contentHeight: Theme.itemSizeMedium
+Separator {
+    property alias type : label.text
+    width: parent.width
+    color: Theme.highlightColor
     Label {
-        id: locName
-        elide: Text.ElideRight
-        color: Theme.primaryColor
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
-        anchors.leftMargin: Theme.horizontalPageMargin
-        anchors.right: locType.left
-        text: name + " " + housenumber
-        font.pixelSize: Theme.fontSizeMedium
-    }
-    Label {
-        text: Helper.capitalize_string(locationType)
-        anchors.bottom: parent.bottom
-        font.italic: true
-        font.pixelSize: Theme.fontSizeExtraSmall
-        anchors.left: parent.left
-        anchors.leftMargin: Theme.horizontalPageMargin
-        color: suggestionDelegate.highlighted ? Theme.highlightColor : Theme.secondaryColor
-    }
-
-    Label {
-        id: locType
-        elide: Text.ElideRight
-        color: Theme.secondaryColor
-        horizontalAlignment: Text.AlignRight
-        anchors.verticalCenter: parent.verticalCenter
+        id: label
+        color: Theme.highlightColor
+        anchors.bottom: parent.verticalCenter
         anchors.right: parent.right
         anchors.rightMargin: Theme.horizontalPageMargin
-        text: city
         font.pixelSize: Theme.fontSizeSmall
+        truncationMode: TruncationMode.Fade
+        horizontalAlignment: Text.AlignRight
     }
 }

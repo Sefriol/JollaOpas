@@ -115,6 +115,23 @@ function get_time_difference_in_minutes(earlierDate,laterDate)
     return Math.floor((laterDate.getTime() - earlierDate.getTime())/1000/60);
 }
 
+function locTypeIdToTxt(locTypeId) {
+    /* Input
+       Name: locTypeId
+       Type: Number
+       Description: Location type id of the location (1-9 and 1008 = poi, 10 = stop, 900 = address)
+       Output
+       Type: String
+       Description: Location as a matching string or invalid type string*/
+    console.log("LOCATIONTYPEID",locTypeId)
+    if (1 <= locTypeId <= 9 || locTypeId === 1008)
+        return qsTr("Place of interest")
+    else if (locTypeId === 10)
+        return qsTr("Stop")
+    else if (locTypeId === 900)
+        return qsTr("Address")
+    else return qsTr("Invalid Location Type")
+}
 
 /****************************************************************************************************/
 /*                     address to location                                                          */
@@ -135,7 +152,7 @@ function get_geocode(term, api_type) {
         query.push(p + "=" + parameters[p])
     }
 
-    //console.debug( API[api_type].URL + '?' + query.join('&'))
+    //console.log( API[api_type].URL + '?' + query.join('&'))
     return API[api_type].URL + '?' + query.join('&')
 }
 

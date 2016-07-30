@@ -32,6 +32,7 @@
 import QtQuick 2.1
 import QtLocation 5.0
 import QtPositioning 5.3
+import Sailfish.Silica 1.0
 import "../js/reittiopas.js" as Reittiopas
 import "../js/sirilive.js" as Sirilive
 import "../js/storage.js" as Storage
@@ -43,7 +44,8 @@ Item {
     id: map_element
     property bool positioningActive : true
     property alias flickable_map : flickable_map
-
+    property bool findLocation: false
+    property variant selectedCoord
     Connections {
         target: Qt.application
         onActiveChanged:
@@ -284,7 +286,14 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            onPressAndHold: flickable_map.panToCoordinate(current_position.coordinate)
+            onPressAndHold:{
+                if(map_element.findLocation){
+                    var coord = flickable_map.screenToCoordinate(mouseX,mouseY)
+                    selectedCoord = coord
+                } else {
+                    flickable_map.panToCoordinate(current_position.coordinate)
+                }
+            }
             onDoubleClicked: flickable_map.zoomLevel += 1
         }
     }
@@ -346,6 +355,28 @@ Item {
         }
     }
 
+    Binding {
+        target: press_position
+        property: "coordinate"
+        value: selectedCoord
+    }
+
+    MapQuickItem {
+        id: press_position
+        sourceItem: LocationCircle {
+            id: statusIndicator
+        }
+        anchorPoint.y: sourceItem.height / 2
+        anchorPoint.x: sourceItem.width / 2
+        z: 51
+
+        Behavior on coordinate {
+            CoordinateAnimation {
+                duration: 500
+                easing.type: Easing.Linear
+            }
+        }
+    }
 //    MapGroup {
 //        id: root_group
 //    }
@@ -430,6 +461,13 @@ Item {
         }
     }
 */
+    function getLocationInitialize(coord, input){
+        var array = coord.split(',')
+        flickable_map.panToCoordinate(QtPositioning.coordinate(array[1],array[0]))
+        flickable_map.addMapItem(press_position)
+        //Helper.clear_objects()
+    }
+
     function initialize(multipleRoutes) {
         flickable_map.addMapItem(current_position)
 

@@ -52,7 +52,7 @@ ListItem {
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: icon.right
         anchors.right: parent.right
-        text: modelData
+        text: name
         font.pixelSize: Theme.fontSizeMedium
     }
 }

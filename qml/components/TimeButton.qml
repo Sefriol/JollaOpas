@@ -33,32 +33,59 @@ import QtQuick 2.1
 import Sailfish.Silica 1.0
 
 BackgroundItem {
-    id: timeContainer
-    height: timeButton.height
-    width: timeButton.width
+    width: parent.width
     property date storedDate
-    property alias text: timeButton.text
-
-    signal timeChanged(variant newTime)
-
-    function updateTime() {
-        storedDate = new Date()
-        timeChanged(storedDate)
-    }
+    property alias text: startTimeLabel.text
+    signal timeChanged(date newTime)
 
     Label {
-        id: timeButton
-        font.pixelSize: Theme.fontSizeMedium
-        anchors.left: parent.left
-        text: Qt.formatTime(storedDate, "hh:mm")
+        id: typeLabel
+        text: qsTr("Time")
+        color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: -startTimeLabel.height
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pixelSize: Theme.fontSizeTiny
+        x: Theme.horizontalPageMargin
     }
-
+    Label {
+        id: startTimeLabel
+        width: parent.width
+        text: Qt.formatDateTime(storedDate, "hh:mm")
+        color: Theme.highlightColor
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: parent.horizontalCenter
+        anchors.rightMargin: 5
+        horizontalAlignment: Text.AlignRight
+    }
     onClicked: {
         var dialog = pageStack.push("Sailfish.Silica.TimePickerDialog",
-            {hour: storedDate.getHours(), minute: storedDate.getMinutes()})
+            {hourMode: (DateTime.TwentyFourHours), hour: storedDate.getHours(), minute: storedDate.getMinutes()})
         dialog.accepted.connect(function() {
-            timeContainer.storedDate = dialog.time
-            timeContainer.timeChanged(timeContainer.storedDate)
+            storedDate = new Date(storedDate.getFullYear() ? storedDate.getFullYear() : 0,
+                                  storedDate.getMonth() ? storedDate.getMonth() : 0,
+                                  storedDate.getDate() ? storedDate.getDate() : 0,
+                                  dialog.time.getHours(),
+                                  dialog.time.getMinutes())
         })
+    }
+    IconButton {
+        id: clockNowButton
+        icon.source: "image://theme/icon-m-watch"
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: parent.horizontalCenter
+        anchors.leftMargin: 5
+        onClicked: {
+            content_column.setTimeNow()
+        }
+        Label {
+            id: nowText
+            text: qsTr("Now")
+            color: clockNowButton.highlighted ? Theme.highlightColor : Theme.primaryColor
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.right
+            anchors.leftMargin: -10
+            font.pixelSize: Theme.fontSizeTiny
+        }
     }
 }

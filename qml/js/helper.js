@@ -96,3 +96,7 @@ function parse_disruption_time(time) {
 function meter_to_kilometer(distance) {
 
 }
+
+function capitalize_string(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}

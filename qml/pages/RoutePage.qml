@@ -147,7 +147,7 @@ Page {
                 text: qsTr("Copy details to Clipboard")
                 onClicked: {
                     Clipboard.text = routeDetails
-                    displayPopupMessage( qsTr("Route details copied to Clipboard") )
+                    appWindow.useNotification( qsTr("Route details copied to Clipboard") )
                 }
             }
             MenuItem {
@@ -166,11 +166,11 @@ Page {
     }
 
     // Added InfoBanner here as a workaround to display it correctly above all other UI elements, fixing the z-order from the one in main.qml isn't trivial
-    InfoBanner {
-        id: infoBanner
-        z: 1
-    }
-    function displayPopupMessage(message) {
-        infoBanner.displayError(message)
-    }
+//    InfoBanner {
+//        id: infoBanner
+//        z: 1
+//    }
+//    function appWindow.useNotification((message) {
+//        infoBanner.displayError(message)
+//    }
 }

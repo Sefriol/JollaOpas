@@ -99,8 +99,11 @@ Map {
     function panToLatLong(latitude,longitude) {
         map.center = QtPositioning.coordinate(latitude, longitude)
     }
-
+    function screenToCoordinate(x,y) {
+        return map.toCoordinate(Qt.point(x,y))
+    }
     MapQuickItem {
+        id: map_quickItem
         width: 70 // width of MapButton
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
@@ -108,7 +111,7 @@ Map {
 
         sourceItem: Column {
             id: col
-            width: parent.width
+            width: map_quickItem.width
             spacing: 16
 
             MapButton {

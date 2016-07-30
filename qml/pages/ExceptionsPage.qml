@@ -35,8 +35,6 @@ import Sailfish.Silica 1.0
 import "../components"
 
 Page {
-    anchors.fill: parent
-
     Component.onCompleted: {
         exceptionModel.reload()
     }

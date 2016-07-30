@@ -34,55 +34,45 @@ import Sailfish.Silica 1.0
 import "../js/UIConstants.js" as UIConstants
 import "../js/reittiopas.js" as Reittiopas
 import "../js/favorites.js" as Favorites
+import "../js/helper.js" as Helper
 import "../components"
 
-Page {
+Dialog {
     id: favorites_page
-
+    property bool query: false
+    property variant selectedObject
+    property bool selectedItem: false
     Component.onCompleted: {
         Favorites.initialize()
         Favorites.getFavorites(favoritesModel)
     }
-
     ListModel {
         id: favoritesModel
     }
-
     SilicaListView {
         id: list
         anchors.fill: parent
-        anchors.leftMargin: Theme.paddingSmall
-        anchors.rightMargin: Theme.paddingSmall
         property Item contextMenu
+        property Item selectedItem
         model: favoritesModel
         delegate: favoritesManageDelegate
-
         VerticalScrollDecorator {}
 
-        header: PageHeader {
-            title: qsTr("Manage favorite places")
-        }
-
-        PullDownMenu {
-            MenuItem { text: qsTr("Add favorite place"); onClicked: pageStack.push(Qt.resolvedUrl("AddFavoriteDialog.qml"), {favoritesModel: favoritesModel}) }
-        }
+        header: query ? dialogHeader : header
 
         ViewPlaceholder {
             enabled: list.count == 0
             text: qsTr("No saved favorite places")
         }
-
         Component {
             id: contextMenuComponent
-
             ContextMenu {
                 id: menu
                 property Item currentItem
                 MenuItem {
-                    text: qsTr("Edit")
-                    onClicked: menu.currentItem.edit()
+                    text: qsTr("Rename")
+                    onClicked: menu.currentItem.rename()
                 }
-
                 MenuItem {
                     text: qsTr("Remove")
                     onClicked: menu.currentItem.remove()
@@ -93,14 +83,15 @@ Page {
 
     Component {
         id: favoritesManageDelegate
-
         BackgroundItem {
             id: rootItem
             width: parent.width
-            height: menuOpen ? Theme.itemSizeSmall + list.contextMenu.height : Theme.itemSizeSmall
+            height: (menuOpen || renameItem) ? (label.height + citylabel.height)*2 + list.contextMenu.height : label.height + citylabel.height
             property bool menuOpen: list.contextMenu != null && list.contextMenu.parent === rootItem
-            function edit() {
-                pageStack.push(Qt.resolvedUrl("EditFavoriteDialog.qml"), {favoritesModel: favoritesModel, name: modelData, old_name: modelData, coord: coord})
+            property bool renameItem: false
+            function rename() {
+                renameItem = true
+                labelTextField.forceActiveFocus()
             }
 
             function remove() {
@@ -109,7 +100,13 @@ Page {
                 })
 
             }
-
+            onPressed: {
+                rootItem.renameItem ? labelTextField.forceActiveFocus() : false
+                selectedObject = favoritesModel.get(index)
+                list.selectedItem ? list.selectedItem.highlighted = false : false
+                list.selectedItem = rootItem
+                rootItem.highlighted = true
+            }
             onPressAndHold: {
                 if (!list.contextMenu) {
                     list.contextMenu = contextMenuComponent.createObject(list)
@@ -120,16 +117,98 @@ Page {
             }
 
             Label {
-                id: label
-                height: Theme.itemSizeSmall
-                text: modelData
+                id: title
+                width: parent.width/5
+                text: Helper.capitalize_string(locationType)
+                font.italic: true
+                font.pixelSize: Theme.fontSizeExtraSmall
                 anchors.left: parent.left
-                width: parent.width
+                anchors.leftMargin: Theme.horizontalPageMargin
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: -parent.height/4
+                color: Theme.highlightColor
+            }
+            Label {
+                visible: !(renameItem)
+                id: label
+                width: parent.width - title.width
+                text: name
+                anchors.left: title.right
+                anchors.leftMargin: Theme.paddingSmall
+                anchors.bottom: title.bottom
+                font.pixelSize: Theme.fontSizeSmall
                 color: Theme.primaryColor
                 verticalAlignment: Text.AlignVCenter
             }
+            TextField {
+                visible: (renameItem)
+                id: labelTextField
+                width: parent.width - title.width
+                text: name
+                anchors.left: title.right
+                anchors.leftMargin: -Theme.paddingLarge
+                anchors.top: parent.top
+                anchors.topMargin: Theme.paddingSmall
+                color: Theme.primaryColor
+                EnterKey.onClicked: {
+                    renameItem = false
+                    name = text
+                    focus = false
+                    console.log(text, name,coord)
+                    Favorites.updateFavorite(text, coord, favoritesModel)
+                }
+            }
+            Label {
+                id: citytitle
+                width: parent.width/5
+                text: qsTr("City")
+                font.italic: true
+                font.pixelSize: Theme.fontSizeTiny
+                anchors.top: title.bottom
+                anchors.topMargin: renameItem ? Theme.paddingMedium : 0
+                anchors.left: parent.left
+                anchors.leftMargin: Theme.horizontalPageMargin
+                color: Theme.highlightColor
+            }
+            Label {
+                id: citylabel
+                width: parent.width - citytitle.width
+                text: city
+                anchors.top: label.bottom
+                anchors.topMargin: renameItem ? Theme.paddingMedium : 0
+                anchors.left: citytitle.right
+                anchors.leftMargin: Theme.paddingSmall
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.primaryColor
+                verticalAlignment: Text.AlignVCenter
+            }
+            IconButton {
+                enabled: renameItem
+                visible: renameItem
+                icon.source: "image://theme/icon-l-check"
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
+                onClicked: {
+                    renameItem = false
+                    labelTextField.focus = false
+                    console.log(labelTextField.text, name,coord)
+                    Favorites.updateFavorite(labelTextField.text, coord, favoritesModel)
+                }
+            }
 
             RemorseItem { id: remorse }
+        }
+    }
+    Component {
+        id: dialogHeader
+        DialogHeader {
+            acceptText: qsTr("Select")
+        }
+    }
+    Component {
+        id: header
+        PageHeader {
+            title: qsTr("Manage favorite places")
         }
     }
 }

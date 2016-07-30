@@ -32,35 +32,44 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
 
-Row {
+Column {
     property bool departure: true
-    Spacing { width: 40 } // Workaround to make switch look more horizontally centralized
-    TextSwitch {
-        id: departureSwitch
-        width: Screen.width/2
-        text: qsTr("Departure")
-        checked: true
-        automaticCheck: false
+    BackgroundItem {
+        id: timeTypeSelector
+        width: Screen.width
         onClicked: {
-            if ( !checked ) {
-                checked = true
-                arrivalSwitch.checked = false
-                departure = true
-            }
+            departure = !departure
         }
-    }
-    TextSwitch {
-        id: arrivalSwitch
-        width: Screen.width/2
-        text: qsTr("Arrival")
-        checked: false
-        automaticCheck: false
-        onClicked: {
-            if ( !checked ) {
-                checked = true
-                departureSwitch.checked = false
-                departure = false
-            }
+        Label {
+            id: typeLabel
+            text: qsTr("Type")
+            color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: -arrivalLabel.height/1.5
+            anchors.horizontalCenter: parent.horizontalCenter
+            font.pixelSize: Theme.fontSizeTiny
+            x: Theme.horizontalPageMargin
+        }
+        Label {
+            id: arrivalLabel
+            text: qsTr("Arrival")
+            width: parent.width/2
+            color: !departure ? Theme.highlightColor : Theme.secondaryHighlightColor
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.horizontalCenter
+            anchors.rightMargin: 5
+            horizontalAlignment: Text.AlignRight
+        }
+
+        Label {
+            id: departureLabel
+            text: qsTr("Departure")
+            width: parent.width/2
+            color: departure ? Theme.highlightColor : Theme.secondaryHighlightColor
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.horizontalCenter
+            anchors.leftMargin: 5
+            horizontalAlignment: Text.AlignLeft
         }
     }
 }

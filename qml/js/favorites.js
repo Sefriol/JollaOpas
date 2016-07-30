@@ -40,21 +40,54 @@ function getDatabase() {
 
 // At the start of the application, we can initialize the tables we need if they haven't been created yet
 function initialize() {
-    var db = getDatabase();
+    var db = getDatabase()
+    var version = checkSchema(db)
+    if (version.toString() === "0") {
+        db.transaction(
+            function(tx) {
+                tx.executeSql('PRAGMA user_version;');
+                // Create the settings table if it doesn't already exist
+                // If the table exists, this is skipped
+                // Type is just preparation for possibly different favorite types in the future
+                tx.executeSql('CREATE TABLE IF NOT EXISTS favorites(coord TEXT UNIQUE, type TEXT NOT NULL, api TEXT NOT NULL, name TEXT NOT NULL);');
+                // Favourite routes, fixed amount of 4 per City, in different table
+                tx.executeSql('CREATE TABLE IF NOT EXISTS favoriteRoutes(routeIndex INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, api TEXT NOT NULL, fromCoord TEXT NOT NULL, fromName TEXT NOT NULL, toCoord TEXT NOT NULL, toName TEXT NOT NULL);');
+                var rs = tx.executeSql("ALTER TABLE favorites ADD LocationType TEXT NOT NULL DEFAULT('address'),city TEXT NOT NULL DEFAULT('Old favorite: Update');");
+                if (rs.rowsAffected >=0){
+                    tx.executeSql('PRAGMA user_version = 1;');
+                }
+            });
+    }
 
+}
+
+function checkSchema(db) {
+    var r
     db.transaction(
         function(tx) {
+            var rs = tx.executeSql('PRAGMA user_version;');
             // Create the settings table if it doesn't already exist
             // If the table exists, this is skipped
             // Type is just preparation for possibly different favorite types in the future
-            tx.executeSql('CREATE TABLE IF NOT EXISTS favorites(coord TEXT UNIQUE, type TEXT NOT NULL, api TEXT NOT NULL, name TEXT NOT NULL);');
-            // Favourite routes, fixed amount of 4 per City, in different table
-            tx.executeSql('CREATE TABLE IF NOT EXISTS favoriteRoutes(routeIndex INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, api TEXT NOT NULL, fromCoord TEXT NOT NULL, fromName TEXT NOT NULL, toCoord TEXT NOT NULL, toName TEXT NOT NULL);');
-          });
+            r = rs.rows.item(0).user_version
+        });
+    return r
+}
+
+
+// This function checks if the favorite already exists
+function favoritExists(coord) {
+    var db = getDatabase();
+    var res = null;
+    db.transaction(function(tx) {
+        var rs = tx.executeSql('SELECT 1 FROM favorites WHERE coord = ?', coord);
+        res = rs.rows.length > 0 ? true : false
+    });
+  return res;
 }
 
 // This function is used to write a setting into the database
-function addFavorite(name, coord) {
+function addFavorite(name, coord, city) {
     var db = getDatabase();
     var res = "";
     db.transaction(function(tx) {
@@ -63,7 +96,7 @@ function addFavorite(name, coord) {
                            res = "Not exist"
                        }
                        else {
-                           rs = tx.executeSql('INSERT INTO favorites (coord,type,api,name) VALUES (?,?,?,?);', [coord,'normal',appWindow.currentApi,name]);
+                           rs = tx.executeSql('INSERT INTO favorites (coord,type,api,name,city) VALUES (?,?,?,?,?);', [coord,'normal',appWindow.currentApi,name,city]);
                            if (rs.rowsAffected > 0) {
                                res = "OK";
                            } else {
@@ -186,13 +219,15 @@ function getFavorites(model) {
    var db = getDatabase();
    var res="";
    db.transaction(function(tx) {
-     var rs = tx.executeSql('SELECT coord,name FROM favorites WHERE api = ?', appWindow.currentApi);
+     var rs = tx.executeSql('SELECT coord,name,city,LocationType FROM favorites WHERE api = ?', appWindow.currentApi);
      if (rs.rows.length > 0) {
          for(var i = 0; i < rs.rows.length; i++) {
              var output = {}
-             output.modelData = rs.rows.item(i).name;
+             output.name = rs.rows.item(i).name;
              output.coord = rs.rows.item(i).coord;
              output.type = "favorite"
+             output.locationType = rs.rows.item(i).LocationType;
+             output.city = rs.rows.item(i).city;
              model.append(output)
          }
      } else {

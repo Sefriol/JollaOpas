@@ -60,3 +60,11 @@ include(common.pri)
 configure($${PWD}/qml/pages/AboutDialog.qml.in)
 
 desktop.files = harbour-jollaopas.desktop
+
+DISTFILES += \
+#    qml/components/SpaceSeparator.qml \
+#    qml/components/DateSwitch.qml \
+#    qml/pages/LocationMapPage.qml \
+#    qml/pages/SearchAddressPage.qml \
+#    qml/components/StatusIndicatorCircle.qml \
+#    qml/components/LocationCircle.qml

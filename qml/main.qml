@@ -31,6 +31,7 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
+import org.nemomobile.notifications 1.0
 import "js/storage.js" as Storage
 import "js/favorites.js" as Favorites
 import "components"
@@ -43,6 +44,12 @@ ApplicationWindow {
 
     InfoBanner {
         id: infoBanner
+    }
+    Notification {
+        id: notification
+        previewBody : ""
+        previewSummary : ""
+        onClicked : notification.close()
     }
 
     allowedOrientations: Orientation.All
@@ -80,7 +87,11 @@ ApplicationWindow {
     property int coverAlignment: Text.AlignHCenter
     property string currentApi: ''
     property variant mainPage
-
+    function useNotification(text){
+        notification.close()
+        notification.previewSummary = text
+        notification.publish()
+    }
     onFollowModeChanged: {
         if(followMode)
             followModeEnabled()

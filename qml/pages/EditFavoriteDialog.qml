@@ -41,10 +41,10 @@ Dialog {
     property string old_name: ""
     property variant favoritesModel
 
-    canAccept: name.text != ''
+    canAccept: name.text !== ''
 
     onAccepted: {
-        if("OK" == Favorites.updateFavorite(edit_dialog.name, edit_dialog.coord, favoritesModel)) {
+        if("OK" === Favorites.updateFavorite(edit_dialog.name, edit_dialog.coord, favoritesModel)) {
             favoritesModel.clear()
             Favorites.getFavorites(favoritesModel)
         }

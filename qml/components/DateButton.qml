@@ -34,25 +34,21 @@ import Sailfish.Silica 1.0
 
 BackgroundItem {
     id: dateContainer
-    width: dateButton.width
-    height: dateButton.height
+    width: parent.width / 2
     property date storedDate
     property bool dateToday: true
-    signal dateChanged(variant newDate)
+    property bool customDate: false
 
     onClicked: {
         var dialog = pageStack.push("Sailfish.Silica.DatePickerDialog", {date: storedDate})
         dialog.accepted.connect(function() {
+            console.log(storedDate)
             dateContainer.storedDate = dialog.date
-            dateContainer.dateChanged(dateContainer.storedDate)
+            storedDate = new Date(dialog.date.getFullYear(), dialog.date.getMonth(), dialog.date.getDate(),
+                              storedDate.getHours()? storedDate.getHours() : 0,
+                                                 storedDate.getMinutes()? storedDate.getMinutes() : 0)
         })
     }
-
-    function updateDate() {
-        storedDate = new Date()
-        dateChanged(storedDate)
-    }
-
     onStoredDateChanged: {
         var currentDate = new Date
         if (storedDate.getDate() !== currentDate.getDate() ||
@@ -64,13 +60,28 @@ BackgroundItem {
             dateContainer.dateToday = true
         }
     }
-
+    Label {
+        id: dateLabel
+        width: parent.width/2
+        text: qsTr("Date")
+        color: !dateToday && customDate ? Theme.highlightColor : Theme.secondaryHighlightColor
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: parent.left
+        anchors.leftMargin: 10
+        anchors.rightMargin: 5
+        horizontalAlignment: Text.AlignLeft
+    }
     Label {
         id: dateButton
-        font.pixelSize: Theme.fontSizeMedium
-        anchors.right: parent.right
-        text: dateContainer.dateToday ? qsTr("Today") : Qt.formatDate(storedDate, "ddd d.M.")
+        width: parent.width/2
+        text: Qt.formatDate(storedDate, "dd.MM")
+        color: !dateToday && customDate ? Theme.highlightColor : Theme.secondaryHighlightColor
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: dateLabel.right
+        anchors.leftMargin: 5
+        horizontalAlignment: Text.AlignLeft
     }
+
 }
 
 

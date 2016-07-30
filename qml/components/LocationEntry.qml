@@ -39,16 +39,17 @@ import "../js/storage.js" as Storage
 import "../js/favorites.js" as Favorites
 
 Column {
-    property alias type : label.text
-    property alias font : label.font
-    property alias label : labelContainer
-    property alias lineHeightMode : label.lineHeightMode
-    property alias lineHeight : label.lineHeight
+    property alias type : label.type
+    property string font
+    property string lineHeightMode
+    property string lineHeight
     property alias textfield : textfield.text
 
-    property string current_name : ''
+    property alias current_name : statusIndicator.validateState
     property string current_coord : ''
 
+    property alias positionBusy: statusIndicator.busyState
+    positionBusy:false
     Location {
         id: previousCoord
 
@@ -57,41 +58,20 @@ Column {
 
     property string destination_name : ''
     property string destination_coord : ''
+    property variant destinationObject
 
     property bool isFrom : false
 
     property bool destination_valid : (suggestionModel.count > 0)
-    property alias selected_favorite : favoriteQuery.selectedIndex
+    property bool isFavorite : false
     property bool disable_favorites : false
 
-    height: textfield.height + labelContainer.height
+    height: firstRow.height * 2
     width: parent.width
 
     signal locationDone(string name, string coord)
     signal currentLocationDone(string name, string coord)
     signal locationError()
-
-    state: (destination_coord || current_coord) ? "validated" : destination_valid ? "sufficient" : "error"
-
-    states: [
-        State {
-            name: "error"
-            PropertyChanges { target: statusIndicator; color: "red" }
-        },
-        State {
-            name: "sufficient"
-            PropertyChanges { target: statusIndicator; color: "yellow" }
-        },
-        State {
-            name: "validated"
-            PropertyChanges { target: statusIndicator; color: "green" }
-        }
-    ]
-    transitions: [
-        Transition {
-            ColorAnimation { duration: 100 }
-        }
-    ]
 
     Component.onCompleted: {
         Favorites.initialize()
@@ -101,35 +81,38 @@ Column {
         suggestionModel.source = ""
         textfield.text = ''
         destination_coord = ''
-        query.selectedIndex = -1
+        destinationObject = null
+        isFavorite = false
         locationDone("","")
     }
 
-    function updateLocation(name, housenumber, coord) {
+    function updateLocation(object) {
         suggestionModel.source = ""
-        var address = name
-
+        var address = object.name.split(',', 1).toString()
+        var housenumber = object.housenumber
         if(housenumber && address.slice(address.length - housenumber.length) != housenumber)
             address += " " + housenumber
 
         destination_name = address
-        destination_coord = coord
+        destination_coord = object.coord
+        destinationObject = object
         textfield.text = address
-
-        locationDone(address, coord)
+        isFavorite = Favorites.favoritExists(object.coord)
+        locationDone(address, object.coord)
     }
 
-    function updateCurrentLocation(name, housenumber, coord) {
+    function updateCurrentLocation(object) {
         currentLocationModel.source = ""
-        var address = name
+        var address = object.name
 
-        if(housenumber && address.slice(address.length - housenumber.length) != housenumber)
-            address += " " + housenumber
+        if(object.housenumber && address.slice(address.length - object.housenumber.length) != object.housenumber)
+            address += " " + object.housenumber
 
         current_name = address
-        current_coord = coord
+        current_coord = object.coord
 
         textfield.placeholderText = address
+        isFavorite = Favorites.favoritExists(suggestionModel.get(0).coord)
         currentLocationDone(address, coord)
     }
 
@@ -151,16 +134,20 @@ Column {
 
     function getCurrentCoord() {
         /* wait until position is accurate enough */
-        if(positionValid(positionSource.position) && positionSource.position.horizontalAccuracy > 0 && positionSource.position.horizontalAccuracy < 100) {
-            gpsTimer.stop()
-            previousCoord.coordinate.latitude = positionSource.position.coordinate.latitude
-            previousCoord.coordinate.longitude = positionSource.position.coordinate.longitude
-            currentLocationModel.source = Reittiopas.get_reverse_geocode(previousCoord.coordinate.latitude.toString(),
-                                                                         previousCoord.coordinate.longitude.toString(),
-                                                                         Storage.getSetting('api'))
+        if(positionValid(positionSource.position)){
+            if(positionSource.position.horizontalAccuracy > 0 && positionSource.position.horizontalAccuracy < 100) {
+                gpsTimer.stop()
+                previousCoord.coordinate.latitude = positionSource.position.coordinate.latitude
+                previousCoord.coordinate.longitude = positionSource.position.coordinate.longitude
+                return Reittiopas.get_reverse_geocode(previousCoord.coordinate.latitude.toString(),
+                                                      previousCoord.coordinate.longitude.toString(),
+                                                            Storage.getSetting('api'))
+            } else {
+                /* poll again in 200ms */
+                gpsTimer.start()
+            }
         } else {
-            /* poll again in 200ms */
-            gpsTimer.start()
+            return false
         }
     }
 
@@ -170,9 +157,10 @@ Column {
         active: Qt.application.active
         onPositionChanged: {
             /* if we have moved >250 meters from the previous place, update current location */
-            if(previousCoord.coordinate.latitude != 0 && previousCoord.coordinate.longitude != 0 &&
+            if(previousCoord.coordinate.latitude != 0 &&
+                    previousCoord.coordinate.longitude != 0 &&
                     position.coordinate.distanceTo(previousCoord) > 250) {
-                getCurrentCoord()
+                getCurrentCoord() ? gpsTimer.start() : currentLocationModel.source = getCurrentCoord()
             }
         }
     }
@@ -190,9 +178,7 @@ Column {
             if(status == XmlListModel.Ready && source != "") {
                 /* if only result, take it into use */
                 if(currentLocationModel.count > 0) {
-                    updateCurrentLocation(currentLocationModel.get(0).name.split(',', 1).toString(),
-                                   currentLocationModel.get(0).housenumber,
-                                   currentLocationModel.get(0).coord)
+                    updateCurrentLocation(currentLocationModel.get(0))
                 }
             }
         }
@@ -206,80 +192,32 @@ Column {
         XmlRole { name: "coord"; query: "coords/string()" }
         XmlRole { name: "shortCode"; query: "shortCode/string()" }
         XmlRole { name: "housenumber"; query: "details/houseNumber/string()" }
-
         onStatusChanged: {
             if(status == XmlListModel.Ready && source != "") {
                 /* if only result, take it into use */
                 if(suggestionModel.count == 1) {
-                    updateLocation(suggestionModel.get(0).name.split(',', 1).toString(),
-                                   suggestionModel.get(0).housenumber,
-                                   suggestionModel.get(0).coord)
+                    positionBusy: false
+                    updateLocation(suggestionModel.get(0))
                 } else if (suggestionModel.count == 0) {
-                    displayPopupMessage( qsTr("No results") )
+                    appWindow.useNotification( qsTr("No results") )
                 } else {
                     /* just update the first result to main page */
+                    isFavorite = Favorites.favoritExists(suggestionModel.get(0).coord)
                     locationDone(suggestionModel.get(0).name.split(',', 1).toString(),suggestionModel.get(0).coord)
                 }
             } else if (status == XmlListModel.Error) {
                 selected_favorite = -1
+                isFavorite = false
                 suggestionModel.source = ""
                 locationDone("", 0, "")
                 locationError()
-                displayPopupMessage( qsTr("Could not find location") )
+                appWindow.useNotification( qsTr("Could not find location") )
             }
         }
     }
 
     ListModel {
         id: favoritesModel
-    }
-
-    MySelectionDialog {
-        id: query
-        model: suggestionModel
-        delegate: SuggestionDelegate {
-            onClicked: {
-                query.selectedIndex = index
-                query.accept()
-            }
-        }
-
-        onAccepted: {
-            updateLocation(suggestionModel.get(selectedIndex).name,
-                            suggestionModel.get(selectedIndex).housenumber,
-                            suggestionModel.get(selectedIndex).coord)
-        }
-        onRejected: {}
-    }
-
-    MySelectionDialog {
-        id: favoriteQuery
-        model: favoritesModel
-        delegate: FavoritesDelegate {
-            onClicked: {
-                favoriteQuery.selectedIndex = index
-                favoriteQuery.accept()
-            }
-        }
-
-        onAccepted: {
-            /* if positionsource used */
-            if(selectedIndex == 0) {
-                if(positionSource.position.latitudeValid && positionSource.position.longitudeValid) {
-                    suggestionModel.source = Reittiopas.get_reverse_geocode(positionSource.position.coordinate.latitude.toString(),
-                                                                            positionSource.position.coordinate.longitude.toString(),
-                                                                            Storage.getSetting('api'))
-                }
-                else {
-                    favoriteQuery.selectedIndex = -1
-                    displayPopupMessage( qsTr("Positioning service disabled from application settings") )
-                }
-            } else {
-                updateLocation(favoritesModel.get(selectedIndex).modelData,
-                               0,
-                               favoritesModel.get(selectedIndex).coord)
-            }
-        }
     }
 
     Timer {
@@ -293,128 +231,152 @@ Column {
             }
         }
     }
+    SpaceSeparator {
+        id: label
+    }
 
-    Item {
-        id: labelContainer
-        anchors.rightMargin: 5
-        height: label.height
-        width: label.width + count.width
-        Rectangle {
-            height: parent.height
-            width: label.width + count.width
-            color: Theme.secondaryHighlightColor
-            z: -1
-            visible: labelMouseArea.pressed
+    BackgroundItem {
+        id: firstRow
+        width: parent.width
+        height: textfield.height < (textfield.height/2 + textfield.height/1.5 +sourceLabel.height) ? (textfield.height/2 + textfield.height/1.5 +sourceLabel.height) : textfield.height
+        onClicked: {
+            var searchdialog = pageStack.push(Qt.resolvedUrl("../pages/SearchAddressPage.qml"))
+            searchdialog.searchType = "source"
+            searchdialog.accepted.connect(function() {
+                updateLocation(searchdialog.selectedObject)
+            })
         }
-        Text {
-            id: label
-            font.pixelSize: 36 * Theme.pixelRatio
+        Label {
+            id: textfield
+            text: qsTr("Select")
             color: Theme.highlightColor
-            lineHeightMode: Text.FixedHeight
-            lineHeight: font.pixelSize * 1.1 * Theme.pixelRatio
-            anchors.left: parent.left
-        }
-        Bubble {
-            id: count
-            count: suggestionModel.count
-            visible: (suggestionModel.count > 1)
-            anchors.left: label.right
-            anchors.leftMargin: 2
-            anchors.verticalCenter: label.verticalCenter
-        }
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            font.pixelSize: Theme.fontSizeSmall
+            truncationMode: TruncationMode.Fade
 
-        MouseArea {
-            id: labelMouseArea
-            anchors.fill: parent
-            enabled: (suggestionModel.count > 1)
-            onClicked: {
-                if(suggestionModel.count > 1) {
-                    query.open()
-                    textfield.focus = false
-                }
+            onTextChanged: {
+
+            }
+            Label {
+                id: sourceLabel
+                text: qsTr("Location")
+                color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: -parent.height/1.5
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: Theme.fontSizeTiny
             }
         }
     }
-
     Item {
+        id: secondRow
         width: parent.width
-        height: textfield.height
-        MyTextfield {
-            id: textfield
-            anchors.left: parent.left
-            anchors.right: disable_favorites ? parent.right : favoritePicker.left
-            placeholderText: qsTr("Type a location")
-
-            onTextChanged: {
-                if(text != destination_name) {
-                    suggestionModel.source = ""
-                    selected_favorite = -1
-                    destination_coord = ""
-                    destination_name = ""
-                    locationDone("","")
-
-                    if(acceptableInput)
-                        suggestionTimer.restart()
-                    else
-                        suggestionTimer.stop()
+        height: gpsButton.height
+        Label {
+            id: gpsButtonLabel
+            text: qsTr("GPS")
+            color: gpsButton.highlighted ? Theme.highlightColor : Theme.primaryColor
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: -height - Theme.paddingMedium
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenterOffset: -parent.width/4
+            font.pixelSize: Theme.fontSizeTiny
+            x: Theme.horizontalPageMargin
+        }
+        IconButton {
+            id: gpsButton
+            icon.source: "image://theme/icon-m-gps"
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenterOffset: -parent.width/4
+            onClicked: {
+                positionBusy: true
+                if (positionValid(positionSource.position)) {
+                    var sourceOrFalse = getCurrentCoord()
+                    if (sourceOrFalse){
+                        suggestionModel.source = sourceOrFalse
+                    } else {
+                        positionBusy: false
+                        appWindow.useNotification(qsTr("Positioning service not available"))
+                    }
+                }
+                else {
+                    positionBusy: false
+                    appWindow.useNotification(qsTr("Positioning service not available"))
                 }
             }
-            Rectangle {
+            StatusIndicatorCircle {
                 id: statusIndicator
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.verticalCenterOffset: -8
-                smooth: true
-                radius: 10 * Theme.pixelRatio
-                height: 20 * Theme.pixelRatio
-                width: 20 * Theme.pixelRatio
-                opacity: 0.6
-            }
-
-            BusyIndicator {
-                id: busyIndicator
-                running: suggestionModel.status == XmlListModel.Loading
-                anchors.centerIn: statusIndicator // Place this similarly to statusIndicator
-                size: BusyIndicatorSize.Small
-                MouseArea {
-                    id: spinnerMouseArea
-                    anchors.fill: parent
-                    onClicked: {
-                        suggestionModel.source = ""
-                    }
-                }
-            }
-            Keys.onReturnPressed: {
-                textfield.focus = false
-                parent.focus = true
             }
         }
-
+        Label {
+            text: qsTr("Favorite")
+            color: favoritePicker.highlighted ? Theme.highlightColor : Theme.primaryColor
+            anchors.verticalCenter: gpsButtonLabel.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            font.pixelSize: Theme.fontSizeTiny
+            x: Theme.horizontalPageMargin
+        }
         IconButton {
             id: favoritePicker
             enabled: !disable_favorites
             visible: !disable_favorites
-            icon.source: (selected_favorite == 0) || (selected_favorite == -1) ? "image://theme/icon-m-favorite" : "image://theme/icon-m-favorite-selected"
-            anchors.right: parent.right
-            anchors.verticalCenter: textfield.verticalCenter
-            anchors.verticalCenterOffset: -8
+            icon.source: !isFavorite ? "image://theme/icon-m-favorite" : "image://theme/icon-m-favorite-selected"
+            icon.height: gpsButton.icon.height
+            anchors.top: gpsButton.top
+            anchors.horizontalCenter: parent.horizontalCenter
             onClicked: {
                 favoritesModel.clear()
                 Favorites.getFavorites(favoritesModel)
-                favoritesModel.insert(0, {modelData: qsTr("Current location"),coord:"0,0"})
-                favoriteQuery.open()
+                var favoriteDialog = pageStack.push(Qt.resolvedUrl("../pages/FavoritesPage.qml"))
+                favoriteDialog.query = true
+                favoriteDialog.accepted.connect(function() {
+                    updateLocation(favoriteDialog.selectedObject)
+                })
             }
             onPressAndHold: {
-                if(destination_coord && favoriteQuery.selectedIndex <= 0) {
-                    if(("OK" == Favorites.addFavorite(textfield.text, destination_coord))) {
+                if(destination_coord) {
+                    enabled: false
+                    if(Favorites.favoritExists(destination_coord)){
+                        Favorites.deleteFavorite(destination_coord, favoritesModel)
+                        isFavorite = false
+                        appWindow.useNotification( qsTr("Location removed from favorite places") )
+                    } else if(("OK" === Favorites.addFavorite(destinationObject.name, destinationObject.coord, destinationObject.city))) {
                         favoritesModel.clear()
                         Favorites.getFavorites(favoritesModel)
-                        favoriteQuery.selectedIndex = favoritesModel.count
-                        displayPopupMessage( qsTr("Location added to favorite places") )
+                        appWindow.useNotification( qsTr("Location added to favorite places") )
                     } else {
-                        displayPopupMessage(qsTr("Location already in the favorite places"))
+                        appWindow.useNotification( qsTr("Adding a location raised a database error") )
                     }
 
+                }
+                enabled: true
+            }
+        }
+        Label {
+            text: qsTr("Map")
+            color: mapButton.highlighted ? Theme.highlightColor : Theme.primaryColor
+            anchors.verticalCenter: gpsButtonLabel.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenterOffset: parent.width/4
+            font.pixelSize: Theme.fontSizeTiny
+            x: Theme.horizontalPageMargin
+        }
+        IconButton {
+            id: mapButton
+            icon.source: "image://theme/icon-m-location"
+            icon.height: gpsButton.icon.height
+            anchors.top: gpsButton.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenterOffset: parent.width/4
+            onClicked: {
+                onClicked: { var mapDialog = pageStack.push(Qt.resolvedUrl("../pages/LocationMapPage.qml"), {inputCoord:destination_coord,resultName:destination_name})
+                    mapDialog.accepted.connect(function() {
+                        updateLocation(mapDialog.resultObject)
+                    })
                 }
             }
         }

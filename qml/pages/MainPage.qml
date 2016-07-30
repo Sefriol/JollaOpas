@@ -52,10 +52,11 @@ Page {
     /* Values entered in "From" field */
     property string fromCoord: ''
     property string fromName: ''
-
     property bool searchButtonDisabled: false
 
     property bool endpointsValid: (toCoord.length > 0 && (fromCoord.length > 0 || currentCoord.length > 0))
+
+    property date myTime
 
     onEndpointsValidChanged: {
         /* if we receive coordinates we are waiting for, start route search */
@@ -94,7 +95,7 @@ Page {
         QmlApplicationViewer.showFullScreen()
 
         /* Update time */
-        timeSwitch.setTimeNow()
+        content_column.setTimeNow()
 
         /* Update new destination to "to" */
         to.updateLocation(name, 0, coord)
@@ -114,7 +115,7 @@ Page {
     }
 
     Component.onCompleted: {
-        timeSwitch.setTimeNow()
+        content_column.setTimeNow()
         appWindow.currentApi = Storage.getSetting("api")
         refreshFavoriteRoutes()
     }
@@ -140,18 +141,19 @@ Page {
         parameters.from = fromCoord ? fromCoord : currentCoord
         parameters.to_name = toName
         parameters.to = toCoord
-
-        if (timeSwitch.timeNow) {
-            parameters.time = currentDate
-        }
-        else if (timeSwitch.dateToday) {
-            currentDate.setHours(timeSwitch.myTime.getHours())
-            currentDate.setMinutes(timeSwitch.myTime.getMinutes())
-            parameters.time = currentDate
-        }
-        else {
-            parameters.time = timeSwitch.myTime
-        }
+        console.log(myTime)
+        parameters.time = myTime
+//        if (content_column.dateNow) {
+//            parameters.time = currentDate
+//        }
+//        else if (dateSwitch.dateToday && !content_column.customDate) {
+//            currentDate.setHours(myTime.getHours())
+//            currentDate.setMinutes(myTime.getMinutes())
+//            parameters.time = currentDate
+//        }
+//        else {
+//            parameters.time = myTime
+//        }
 
         parameters.timetype = timeTypeSwitch.departure ? "departure" : "arrival"
         parameters.walk_speed = walking_speed == "Unknown"?"70":walking_speed
@@ -218,7 +220,6 @@ Page {
         PullDownMenu {
             MenuItem { text: qsTr("Settings"); onClicked: { pageStack.push(Qt.resolvedUrl("SettingsPage.qml")) } }
             MenuItem { text: qsTr("Exception info"); visible: appWindow.currentApi === "helsinki"; onClicked: pageStack.push(Qt.resolvedUrl("ExceptionsPage.qml")) }
-            MenuItem { text: qsTr("Manage favorite places"); onClicked: pageStack.push(Qt.resolvedUrl("FavoritesPage.qml")) }
             MenuItem {
                 enabled: endpointsValid
                 text: qsTr("Add as favorite route");
@@ -227,13 +228,14 @@ Page {
                     var fromCoordToAdd = fromCoord ? fromCoord : currentCoord
                     var res = Favorites.addFavoriteRoute('normal', appWindow.currentApi, fromCoordToAdd, fromNameToAdd, toCoord, toName, favoriteRoutesModel)
                     if (res === "OK") {
-                        displayPopupMessage( qsTr("Favorite route added") )
+                        appWindow.useNotification( qsTr("Favorite route added") )
                     }
                     else {
-                        displayPopupMessage( qsTr("Maximum amount of favorite routes is 4!") )
+                        appWindow.useNotification( qsTr("Maximum amount of favorite routes is 4!") )
                     }
                 }
             }
+            MenuItem {text: qsTr("Get return route"); onClicked: {Helper.switch_locations(from,to)}}
             MenuItem {
                 visible: searchButtonDisabled
                 enabled: endpointsValid
@@ -246,20 +248,27 @@ Page {
             }
         }
 
-        Spacing { id: topSpacing; anchors.top: parent.top; height: Theme.paddingMedium }
+        Spacing { id: topSpacing; anchors.top: parent.top; height: (Theme.fontSizeSmall + 5) * Theme.pixelRatio }
 
         Column {
+            property bool dateNow
+            property bool customDate
+            function setTimeNow() {
+                myTime = new Date()
+                timeSwitch.storedDate = myTime
+                dateSwitch.storedDate = myTime
+                customDate = dateSwitch.customDate = false
+                dateNow = dateSwitch.dateToday = true
+            }
+
             id: content_column
             width: parent.width
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.paddingSmall
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: topSpacing.bottom
 
             Item {
                 width: parent.width
                 height: from.height + to.height
-
                 LocationEntry {
                     id: from
                     type: qsTr("From")
@@ -280,14 +289,6 @@ Page {
 
                 Spacing { id: location_spacing; anchors.top: from.bottom; height: 5 }
 
-                SwitchLocation {
-                    anchors.top: from.top
-                    anchors.topMargin: from.height - location_spacing.height - UIConstants.DEFAULT_MARGIN // Hack to place switch between `from` and `to` LocationEntries
-                    z: 1
-                    from: from
-                    to: to
-                }
-
                 LocationEntry {
                     id: to
                     type: qsTr("To")
@@ -297,16 +298,35 @@ Page {
                     }
                     anchors.top: location_spacing.bottom
                 }
+
+            }
+            Spacing { id: when_spacing; height: 10 }
+            SpaceSeparator {
+                type: qsTr("When")
             }
 
             TimeTypeSwitch {
                 id: timeTypeSwitch
             }
-            Spacing { height: 5 * Theme.pixelRatio }
             TimeSwitch {
                 id: timeSwitch
+                onStoredDateChanged: {
+                    console.log(myTime, timeSwitch.storedDate, dateSwitch.storedDate)
+                    myTime = dateSwitch.storedDate = timeSwitch.storedDate
+                }
             }
-            Spacing { height: 5 * Theme.pixelRatio }
+            DateSwitch {
+                id: dateSwitch
+                dateToday: dateNow
+                onHandleSwitchesCheckedState: {
+                    content_column.dateNow = dateSwitch.dateToday = dateNow
+                    content_column.customDate = dateSwitch.customDate = customDate
+                }
+                onStoredDateChanged: {
+                    console.log(myTime, timeSwitch.storedDate, dateSwitch.storedDate)
+                    myTime = timeSwitch.storedDate = dateSwitch.storedDate
+                }
+            }
 
             Button {
                 visible: !searchButtonDisabled
@@ -321,22 +341,18 @@ Page {
             }
         }
 
-        Spacing { id: favorites_spacing; anchors.top: content_column.bottom; height: 5 * Theme.pixelRatio }
+        Spacing { id: favorites_spacing; anchors.top: content_column.bottom; height: (Theme.fontSizeSmall + 5) * Theme.pixelRatio }
 
 
         Item {
             id: headeritem
             width: parent.width
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.paddingSmall
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: favorites_spacing.bottom
-            height: (favoriteRouteHeader.height + UIConstants.DEFAULT_MARGIN) * Theme.pixelRatio
-            Text {
+            height: (favoriteRouteHeader.height + Theme.fontSizeSmall) * Theme.pixelRatio
+            SpaceSeparator {
                 id: favoriteRouteHeader
-                color: Theme.highlightColor
-                font.pixelSize: 36 * Theme.pixelRatio
-                text: qsTr("Favorite routes")
+                type: qsTr("Favourites")
             }
         }
 
@@ -344,7 +360,6 @@ Page {
             id: favoriteRouteList
             anchors.top: headeritem.bottom
             anchors.bottom: parent.bottom
-            spacing: 5 * Theme.pixelRatio
             width: parent.width
             model: favoriteRoutesModel
             delegate: favoriteRouteManageDelegate
@@ -392,7 +407,7 @@ Page {
 
                 function addToCover() {
                     Favorites.addFavoriteRoute('cover', appWindow.currentApi, modelFromCoord, modelFromName, modelToCoord, modelToName)
-                    displayPopupMessage( qsTr("Favorite route added to cover action.") )
+                    appWindow.useNotification( qsTr("Favorite route added to cover action.") )
                 }
 
                 function remove() {
@@ -451,11 +466,11 @@ Page {
     }
 
     // Added InfoBanner here as a workaround to display it correctly above all other UI elements, fixing the z-order from the one in main.qml isn't trivial
-    InfoBanner {
-        id: infoBanner
-        z: 1
-    }
-    function displayPopupMessage(message) {
-        infoBanner.displayError(message)
-    }
+//    InfoBanner {
+//        id: infoBanner
+//        z: 1
+//    }
+//    function appWindow.useNotification((message) {
+//        infoBanner.displayError(message)
+//    }
 }

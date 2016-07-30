@@ -47,7 +47,8 @@ Component {
             id: column
             anchors.right: parent.right
             anchors.left: parent.left
-
+            anchors.rightMargin: UIConstants.DEFAULT_MARGIN
+            anchors.leftMargin: UIConstants.DEFAULT_MARGIN
             Text {
                 text: Qt.formatDateTime(Helper.parse_disruption_time(time), "dd.MM.yyyy - hh:mm")
                 anchors.left: parent.left
