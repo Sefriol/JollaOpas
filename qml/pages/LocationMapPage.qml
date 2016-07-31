@@ -77,7 +77,7 @@ Dialog {
         XmlRole { name: "coord"; query: "coords/string()" }
         XmlRole { name: "shortCode"; query: "shortCode/string()" }
         XmlRole { name: "housenumber"; query: "details/houseNumber/string()" }
-
+        XmlRole { name: "locationType"; query: "locType/string()" }
         onStatusChanged: {
             if(status == XmlListModel.Ready && source != "") {
                 /* if only result, take it into use */

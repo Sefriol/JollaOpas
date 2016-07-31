@@ -143,7 +143,6 @@ Dialog {
                 onClicked: {
                     selectName = name
                     selectObject = suggestionModel.get(index)
-                    console.log(selectName, selectObject, index)
                     search_page.accept()
                 }
             }

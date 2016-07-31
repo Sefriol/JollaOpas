@@ -60,31 +60,51 @@ Page {
         // could possibly be done in reittiopas.js when parsing json data
         onDoneChanged: {
             if (done) {
+                var model = appWindow.routeModel
+                model.clear()
                 for (var i = 0; i < routeModel.count; ++i) {
+                    var object = {}
                     var leg = routeModel.get(i)
                     var type = leg.type
                     if (type === 'station') {
-                        var shortCodeText = typeof(leg.shortCode) === "undefined" ? "" : "(" + leg.shortCode + ")"
-                        routeDetails += (Qt.formatTime(leg.time, "hh:mm") + " " + leg.name + shortCodeText + "\n")
+                        object.name = leg.name
+                        object.time = leg.time
+                        leg = routeModel.get(i += 1)
+                        if(leg)(type = leg.type)
+                        else break
+                        switch(type){
+                        case 'walk':
+                            object.type = type
+                            object.length = Math.floor(leg.length/100)/10
+                            break
+                        case 'bus':
+                            object.type = type
+                            object.code = leg.code
+                            object.duration = leg.duration
+                            break
+                        case 'train':
+                            object.code = leg.code
+                            object.duration = leg.duration
+                            object.type = type
+                            break
+                        case 'metro':
+                            object.code = leg.code
+                            object.duration = leg.duration
+                            object.type = type
+                            break
+                        case 'ferry':
+                            object.code = leg.code
+                            object.duration = leg.duration
+                            object.type = type
+                            break
+                        case 'tram':
+                            object.code = leg.code
+                            object.duration = leg.duration
+                            object.type = type
+                            break
+                        }
                     }
-                    else if (type === 'walk') {
-                        routeDetails += (qsTr("Walking") + ", " + Math.floor(leg.length/100)/10 + " " + qsTr("km") + "\n")
-                    }
-                    else {
-                        if (type === 'bus')
-                            routeDetails += qsTr("Bus")
-                        else if (type === 'train')
-                            routeDetails += qsTr("Train")
-                        else if (type === 'metro')
-                            routeDetails += qsTr("Metro")
-                        else if (type === 'ferry')
-                            routeDetails += qsTr("Ferry")
-                        else if (type === 'tram')
-                            routeDetails += qsTr("Tram")
-                        else
-                            routeDetails += ""
-                        routeDetails += (" " + leg.code + ", " + leg.duration + " " + qsTr("min") + "\n")
-                    }
+                    model.append(object)
                 }
                 appWindow.coverAlignment = Text.AlignLeft
                 appWindow.coverHeader = start_time.slice(11,16) + " - " + finish_time.slice(11,16)
@@ -164,13 +184,4 @@ Page {
         size: BusyIndicatorSize.Large
         anchors.centerIn: parent
     }
-
-    // Added InfoBanner here as a workaround to display it correctly above all other UI elements, fixing the z-order from the one in main.qml isn't trivial
-//    InfoBanner {
-//        id: infoBanner
-//        z: 1
-//    }
-//    function appWindow.useNotification((message) {
-//        infoBanner.displayError(message)
-//    }
 }

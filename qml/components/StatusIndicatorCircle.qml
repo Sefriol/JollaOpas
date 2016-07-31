@@ -10,6 +10,7 @@ Rectangle {
     property variant validateState
     property variant sufficientState
     property variant busyState
+    property bool tinyIndicator
 
 
     state: validateState ? "validated" : sufficientState ? "sufficient" : "error"
@@ -36,7 +37,7 @@ Rectangle {
         id: busyIndicator
         running: busyState
         anchors.centerIn: statusIndicator // Place this similarly to statusIndicator
-        size: BusyIndicatorSize.Small
+        size: tinyIndicator ? BusyIndicatorSize.ExtraSmall : BusyIndicatorSize.Small
         MouseArea {
             id: spinnerMouseArea
             anchors.fill: parent

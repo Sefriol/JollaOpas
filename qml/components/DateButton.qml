@@ -42,8 +42,6 @@ BackgroundItem {
     onClicked: {
         var dialog = pageStack.push("Sailfish.Silica.DatePickerDialog", {date: storedDate})
         dialog.accepted.connect(function() {
-            console.log(storedDate)
-            dateContainer.storedDate = dialog.date
             storedDate = new Date(dialog.date.getFullYear(), dialog.date.getMonth(), dialog.date.getDate(),
                               storedDate.getHours()? storedDate.getHours() : 0,
                                                  storedDate.getMinutes()? storedDate.getMinutes() : 0)

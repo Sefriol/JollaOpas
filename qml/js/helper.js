@@ -100,3 +100,77 @@ function meter_to_kilometer(distance) {
 function capitalize_string(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+// @param dateStamp or dateObj
+// @return string dateStamp formatted as hh:mm
+function prettyTime(dateParam) {
+    var returnString
+
+    // default value
+    returnString = ""
+
+
+
+    // handle bad values
+    if (typeof dateParam === 'undefined') return returnString
+
+    // Get the hour and minute numbers from string
+    if (typeof dateParam === 'string') {
+        if (dateParam.length > 8) {
+            returnString = dateParam.substring(8,10) + ":" + dateParam.substring(10,12)
+        }
+    }
+
+    // parse dateObj
+    else {
+        returnString = Qt.formatDateTime(dateParam, "hhmm")
+    }
+    return returnString
+}
+
+// @param int amount of seconds
+// @return h:mm:ss or just mm:ss from se
+function prettyTimeFromSeconds(seconds) {
+    var prefix = ""
+    var hoursString = ""
+    if (isNaN(seconds)) {
+        return ""
+    }  else {
+
+        // handle negative times: add prefix to the output and do the calculation with positive number
+        if (seconds < 0) {
+            prefix = "-"
+            seconds = -1*seconds
+        }
+
+        var hours = Math.floor(seconds / 3600)
+        var minutes = Math.floor((seconds - 3600*hours)/ 60)
+        var remainingSeconds = seconds - 60*minutes - 3600*hours
+
+        // if the time is over an hour ago, add hours and zeropadding to the minute
+        if (hours > 0) {
+            hoursString = hours + ":"
+            minutes = addZeroPadding(minutes)
+        }
+    }
+    return prefix + hoursString + minutes + ":" + ('0' + remainingSeconds.toString()).slice(-2)
+}
+
+// get two dates and return their difference in seconds
+// if parameter is null, current time is used
+function timestampDifferenceInSeconds(arrDate, depDate) {
+
+    if (arrDate === null) {
+        var arrDateObject = new Date()
+    } else {
+        var arrDateObject = new Date(arrDate)
+    }
+
+    if (depDate === null) {
+        var depDateObject = new Date()
+    } else {
+        var depDateObject = new Date(depDate)
+    }
+    var seconds = Math.round((depDateObject-arrDateObject)/1000);
+    return seconds
+}

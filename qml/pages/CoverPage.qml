@@ -34,39 +34,169 @@ import Sailfish.Silica 1.0
 import "../js/UIConstants.js" as UIConstants
 import "../js/storage.js" as Storage
 import "../js/favorites.js" as Favorites
+import "../js/helper.js" as Helper
+import "../components"
 
 CoverBackground {
-    Label {
-        id: coverHeader
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.margins: Theme.paddingSmall
-        anchors.horizontalCenter: parent.horizontalCenter
-        maximumLineCount: 2
-        horizontalAlignment: Text.AlignHCenter
-        color: Theme.highlightColor
-        text: appWindow.coverHeader
-        wrapMode: Text.Wrap
-    }
+    id: appCover
+    states: [
+        State {
+            name: "empty"
+            when: routeModel.count == 0
+        },
+        State {
+            name: "active"
+            when: routeModel.count > 0
+            PropertyChanges {target: routeDataColumn; visible: true }
+            PropertyChanges {target: defaultCoverActions; enabled: false }
+            PropertyChanges {target: routeCoverAction; enabled: true }
+            PropertyChanges {target: differenceTimer; running: true }
+            PropertyChanges {target: lineImage; source: "qrc:/images/" + routeModel.get(coverView.currentIndex).type + ".png"}
+            PropertyChanges {target: lineNumber; text: routeModel.get(coverView.currentIndex).code? routeModel.get(coverView.currentIndex).code : routeModel.get(coverView.currentIndex).length + " km"}
+        }
+    ]
+    Column {
+        id: routeDataColumn
+        width: parent.width-12
+        anchors.left: appCover.left
+        anchors.leftMargin: 6
+        spacing: 10
+        visible: false
 
-    Label {
-        id: label
-        anchors.top: coverHeader.bottom
-        anchors.left: parent.left
-        anchors.margins: Theme.paddingSmall
-        anchors.horizontalCenter: parent.horizontalCenter
-        maximumLineCount: 6
-        horizontalAlignment: appWindow.coverAlignment
-        font.pixelSize: Theme.fontSizeSmall
-        text: appWindow.coverContents
-        elide: Text.ElideRight
-        wrapMode: Text.NoWrap
-        clip: true
-    }
+        Row {
+            id: routeIndicator
+            anchors.horizontalCenter: parent.horizontalCenter
+            Rectangle {
+                color: Theme.secondaryColor
+                border.color: Theme.primaryColor
+                border.width: 1
+                opacity:0.2
 
+                radius: 5
+                smooth: true
+
+                height: indicatorRepeater.height
+                width: indicatorRepeater.width
+
+                anchors {
+                    verticalCenter: routeIndicator.verticalCenter
+                }
+            }
+            Repeater {
+                id:indicatorRepeater
+                model:routeModel
+                anchors.horizontalCenter: parent.horizontalCenter
+                delegate: Rectangle {
+                    anchors {
+                        verticalCenter: routeIndicator.verticalCenter
+                    }
+                    height: routeIcon.height
+                    width: routeIcon.width
+                    color: "transparent"
+                    Rectangle {
+                        color: Theme.secondaryColor
+                        border.color: Theme.primaryColor
+                        border.width: 1
+                        opacity:(coverView.currentIndex == index ? 1 : 0.2)
+
+                        radius: 5
+                        smooth: true
+
+                        height: routeIcon.height
+                        width: routeIcon.width
+
+                        anchors {
+                            verticalCenter: parent.verticalCenter
+                        }
+                    }
+                    Image {
+                        id: routeIcon
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                        height: coverView.count > 5 ? 240/coverView.count : 48
+                        source: type !== "logo" ? "qrc:/images/" + type + ".png" : "qrc:logo" // fix this later "qrc:images/"+ size + "/" + type +  ".png"
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            id: routeWindow
+            clip: true  // this is needed so that only one leg is shown in the cover
+            width: parent.width
+
+            height: 120
+            color: "transparent"
+
+            ListView {
+                id: coverView
+                model: routeModel
+                width: parent.width
+                interactive: false
+
+                onCurrentIndexChanged: {
+                    clockTick()
+                    updateLineImage(coverView.currentIndex)
+                }
+
+                anchors.left: parent.left
+                anchors.top: parent.top
+
+                delegate: Column {
+                    id: waypointColumn
+                    width: appCover.width
+                    Row {
+                        width: parent.width
+                        spacing: 10
+                        CoverTime {
+                            schedTime: Helper.prettyTime(routeModel.get(index).time)
+                            realTime: appWindow.routeModel.get(index).time
+                            realTimeAcc: "min"
+                            font.pixelSize: Theme.fontSizeMedium
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+                    }
+                    Label {
+                        id: stopName
+                        text: routeModel.get(index).name
+                        font.pixelSize: Theme.fontSizeSmall
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+            }
+        }
+        Row{
+            width: parent.width
+            Image {
+                id: lineImage
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                width: parent.width * 1/3
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Label {
+                id: lineNumber
+                width: parent.width * 2/3
+                font.pixelSize: Theme.fontSizeExtraLarge
+                horizontalAlignment: Text.AlignHCenter
+                Label {
+                    id: timeLeftLabel
+                    font.pixelSize: Theme.fontSizeMedium
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.top: lineNumber.bottom
+                    anchors.horizontalCenter: lineNumber.horizontalCenter
+                }
+            }
+        }
+
+    }
     CoverActionList {
-        id: coverAction
-
+        id: defaultCoverActions
+        enabled: true
         CoverAction {
             iconSource: "image://theme/icon-cover-favorite"
             onTriggered: {
@@ -81,7 +211,39 @@ CoverBackground {
             }
         }
     }
+    CoverActionList {
+        id: routeCoverAction
+        enabled: false
+        CoverAction {
+            iconSource: "image://theme/icon-cover-next"
+            onTriggered: {
+                coverView.currentIndex >= coverView.count - 1 ? coverView.currentIndex = 0 : coverView.incrementCurrentIndex()
+            }
+        }
+    }
+    Timer {
+        id: differenceTimer
+        interval: 1000
+        running: false
+        repeat: true
+        onTriggered: {
+            clockTick()
+        }
+    }
+    // update the clocks on the cover
+    signal clockTick()
+    onClockTick: {
+        var model = routeModel.get(coverView.currentIndex)
+        var stopTime = model.time
+        timeLeftLabel.text = Helper.prettyTimeFromSeconds(Helper.timestampDifferenceInSeconds(null, stopTime))
+    }
 
+    signal updateLineImage(int index)
+    onUpdateLineImage: {
+        var model = routeModel.get(index)
+        lineImage.source ="qrc:/images/" + model.type + ".png"
+        lineNumber.text = model.code ? model.code : model.length + " km"
+    }
     function startCoverSearch(direction) {
         pageStack.clear()
         appWindow.activate()

@@ -87,7 +87,7 @@ function favoritExists(coord) {
 }
 
 // This function is used to write a setting into the database
-function addFavorite(name, coord, city) {
+function addFavorite(name, coord, city, locationtype) {
     var db = getDatabase();
     var res = "";
     db.transaction(function(tx) {
@@ -96,7 +96,8 @@ function addFavorite(name, coord, city) {
                            res = "Not exist"
                        }
                        else {
-                           rs = tx.executeSql('INSERT INTO favorites (coord,type,api,name,city) VALUES (?,?,?,?,?);', [coord,'normal',appWindow.currentApi,name,city]);
+                           console.log(name, coord, city, locationtype)
+                           rs = tx.executeSql('INSERT INTO favorites (coord,type,api,name,city,LocationType) VALUES (?,?,?,?,?,?);', [coord,'normal',appWindow.currentApi,name,city,locationtype]);
                            if (rs.rowsAffected > 0) {
                                res = "OK";
                            } else {

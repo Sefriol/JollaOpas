@@ -154,7 +154,6 @@ Dialog {
                     renameItem = false
                     name = text
                     focus = false
-                    console.log(text, name,coord)
                     Favorites.updateFavorite(text, coord, favoritesModel)
                 }
             }
@@ -191,7 +190,6 @@ Dialog {
                 onClicked: {
                     renameItem = false
                     labelTextField.focus = false
-                    console.log(labelTextField.text, name,coord)
                     Favorites.updateFavorite(labelTextField.text, coord, favoritesModel)
                 }
             }

@@ -49,7 +49,10 @@ Column {
     property string current_coord : ''
 
     property alias positionBusy: statusIndicator.busyState
+    property alias gpsLoading: statusIndicator.sufficientState
+    gpsLoading: false
     positionBusy:false
+
     Location {
         id: previousCoord
 
@@ -77,13 +80,10 @@ Column {
         Favorites.initialize()
     }
 
-    function clear() {
-        suggestionModel.source = ""
-        textfield.text = ''
-        destination_coord = ''
-        destinationObject = null
-        isFavorite = false
-        locationDone("","")
+    function favoritesUpdateLocation(object){
+        tempStorageModel.clear()
+        tempStorageModel.append(object)
+        updateLocation(tempStorageModel.get(0))
     }
 
     function updateLocation(object) {
@@ -192,6 +192,7 @@ Column {
         XmlRole { name: "coord"; query: "coords/string()" }
         XmlRole { name: "shortCode"; query: "shortCode/string()" }
         XmlRole { name: "housenumber"; query: "details/houseNumber/string()" }
+        XmlRole { name: "locationType"; query: "locType/string()" }
         onStatusChanged: {
             if(status == XmlListModel.Ready && source != "") {
                 /* if only result, take it into use */
@@ -220,6 +221,9 @@ Column {
         id: favoritesModel
     }
 
+    ListModel {
+        id: tempStorageModel
+    }
     Timer {
         id: suggestionTimer
         interval: 1200
@@ -243,7 +247,7 @@ Column {
             var searchdialog = pageStack.push(Qt.resolvedUrl("../pages/SearchAddressPage.qml"))
             searchdialog.searchType = "source"
             searchdialog.accepted.connect(function() {
-                updateLocation(searchdialog.selectedObject)
+                updateLocation(searchdialog.selectObject)
             })
         }
         Label {
@@ -293,6 +297,7 @@ Column {
             onClicked: {
                 positionBusy: true
                 if (positionValid(positionSource.position)) {
+                    gpsLoading = true
                     var sourceOrFalse = getCurrentCoord()
                     if (sourceOrFalse){
                         suggestionModel.source = sourceOrFalse
@@ -308,7 +313,10 @@ Column {
             }
             StatusIndicatorCircle {
                 id: statusIndicator
-                anchors.right: parent.right
+                radius: 5 * Theme.pixelRatio
+                height: 10 * Theme.pixelRatio
+                width: 10 * Theme.pixelRatio
+                anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
         }
@@ -334,7 +342,7 @@ Column {
                 var favoriteDialog = pageStack.push(Qt.resolvedUrl("../pages/FavoritesPage.qml"))
                 favoriteDialog.query = true
                 favoriteDialog.accepted.connect(function() {
-                    updateLocation(favoriteDialog.selectedObject)
+                    favoritesUpdateLocation(favoriteDialog.selectedObject)
                 })
             }
             onPressAndHold: {
@@ -344,9 +352,10 @@ Column {
                         Favorites.deleteFavorite(destination_coord, favoritesModel)
                         isFavorite = false
                         appWindow.useNotification( qsTr("Location removed from favorite places") )
-                    } else if(("OK" === Favorites.addFavorite(destinationObject.name, destinationObject.coord, destinationObject.city))) {
+                    } else if(("OK" === Favorites.addFavorite(destination_name, destinationObject.coord, destinationObject.city, destinationObject.locationType))) {
                         favoritesModel.clear()
                         Favorites.getFavorites(favoritesModel)
+                        isFavorite = true
                         appWindow.useNotification( qsTr("Location added to favorite places") )
                     } else {
                         appWindow.useNotification( qsTr("Adding a location raised a database error") )

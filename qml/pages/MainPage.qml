@@ -141,19 +141,7 @@ Page {
         parameters.from = fromCoord ? fromCoord : currentCoord
         parameters.to_name = toName
         parameters.to = toCoord
-        console.log(myTime)
         parameters.time = myTime
-//        if (content_column.dateNow) {
-//            parameters.time = currentDate
-//        }
-//        else if (dateSwitch.dateToday && !content_column.customDate) {
-//            currentDate.setHours(myTime.getHours())
-//            currentDate.setMinutes(myTime.getMinutes())
-//            parameters.time = currentDate
-//        }
-//        else {
-//            parameters.time = myTime
-//        }
 
         parameters.timetype = timeTypeSwitch.departure ? "departure" : "arrival"
         parameters.walk_speed = walking_speed == "Unknown"?"70":walking_speed
@@ -311,7 +299,6 @@ Page {
             TimeSwitch {
                 id: timeSwitch
                 onStoredDateChanged: {
-                    console.log(myTime, timeSwitch.storedDate, dateSwitch.storedDate)
                     myTime = dateSwitch.storedDate = timeSwitch.storedDate
                 }
             }
@@ -323,7 +310,6 @@ Page {
                     content_column.customDate = dateSwitch.customDate = customDate
                 }
                 onStoredDateChanged: {
-                    console.log(myTime, timeSwitch.storedDate, dateSwitch.storedDate)
                     myTime = timeSwitch.storedDate = dateSwitch.storedDate
                 }
             }
@@ -464,13 +450,4 @@ Page {
             }
         }
     }
-
-    // Added InfoBanner here as a workaround to display it correctly above all other UI elements, fixing the z-order from the one in main.qml isn't trivial
-//    InfoBanner {
-//        id: infoBanner
-//        z: 1
-//    }
-//    function appWindow.useNotification((message) {
-//        infoBanner.displayError(message)
-//    }
 }

@@ -41,10 +41,6 @@ ApplicationWindow {
 
     cover: Qt.resolvedUrl("pages/CoverPage.qml")
 
-
-    InfoBanner {
-        id: infoBanner
-    }
     Notification {
         id: notification
         previewBody : ""
@@ -80,6 +76,11 @@ ApplicationWindow {
     property bool followMode : false
     property bool mapVisible : false
     property string colorscheme : "default"
+    property variant routeModel: routeModel
+
+    ListModel{
+        id:routeModel
+    }
 
     // Pages sets the cover data to these properties and cover is instantiated every time based on these
     property string coverHeader: ''

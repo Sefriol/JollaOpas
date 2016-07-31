@@ -68,3 +68,4 @@ DISTFILES += \
 #    qml/pages/SearchAddressPage.qml \
 #    qml/components/StatusIndicatorCircle.qml \
 #    qml/components/LocationCircle.qml
+    qml/components/CoverTime.qml
