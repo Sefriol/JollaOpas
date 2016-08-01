@@ -43,7 +43,7 @@ Dialog {
     property variant selectedObject
     property bool selectedItem: false
     Component.onCompleted: {
-        Favorites.initialize()
+        //Favorites.initialize()
         Favorites.getFavorites(favoritesModel)
     }
     ListModel {

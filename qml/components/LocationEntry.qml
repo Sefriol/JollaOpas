@@ -77,7 +77,15 @@ Column {
     signal locationError()
 
     Component.onCompleted: {
-        Favorites.initialize()
+        //Favorites.initialize()
+    }
+
+    function clear() {
+        suggestionModel.source = ""
+        textfield.text = ''
+        destination_coord = ''
+        query.selectedIndex = -1
+        locationDone("","")
     }
 
     function favoritesUpdateLocation(object){

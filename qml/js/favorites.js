@@ -32,7 +32,7 @@
 // Adapted from:http://www.developer.nokia.com/Community/Wiki/How-to_create_a_persistent_settings_database_in_Qt_Quick_%28QML%29
 
 .import QtQuick.LocalStorage 2.0 as Sql
-
+.import "storage.js" as Storage
 // First, let's create a short helper function to get the database connection
 function getDatabase() {
      return Sql.LocalStorage.openDatabaseSync("JollaOpas", "1.0", "StorageDatabase", 100000);
@@ -41,39 +41,80 @@ function getDatabase() {
 // At the start of the application, we can initialize the tables we need if they haven't been created yet
 function initialize() {
     var db = getDatabase()
-    var version = checkSchema(db)
-    if (version.toString() === "0") {
+    var version = 0
+    db.transaction(function(tx) {
+        var rs = tx.executeSql('PRAGMA user_version;');
+        var version = rs.rows.item(0).user_version
+    });
+    if (version !== 0) return
+
+    var status1 = checkSchema(db,"favorites")
+    console.log("favorites init success: ", status1)
+    var status2  = checkSchema(db,"favoriteRoutes")
+    console.log("favoriteRoutes init success: ", status2)
+    if (status2 === true && status1 === true) {
         db.transaction(
             function(tx) {
-                tx.executeSql('PRAGMA user_version;');
-                // Create the settings table if it doesn't already exist
-                // If the table exists, this is skipped
-                // Type is just preparation for possibly different favorite types in the future
-                tx.executeSql('CREATE TABLE IF NOT EXISTS favorites(coord TEXT UNIQUE, type TEXT NOT NULL, api TEXT NOT NULL, name TEXT NOT NULL);');
-                // Favourite routes, fixed amount of 4 per City, in different table
-                tx.executeSql('CREATE TABLE IF NOT EXISTS favoriteRoutes(routeIndex INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, api TEXT NOT NULL, fromCoord TEXT NOT NULL, fromName TEXT NOT NULL, toCoord TEXT NOT NULL, toName TEXT NOT NULL);');
-                var rs = tx.executeSql("ALTER TABLE favorites ADD LocationType TEXT NOT NULL DEFAULT('address'),city TEXT NOT NULL DEFAULT('Old favorite: Update');");
-                if (rs.rowsAffected >=0){
-                    tx.executeSql('PRAGMA user_version = 1;');
-                }
+                tx.executeSql('PRAGMA user_version = 1;');
             });
     }
-
 }
 
-function checkSchema(db) {
+function checkSchema(db, tableName) {
     var r
+    var query = ""
     db.transaction(
         function(tx) {
-            var rs = tx.executeSql('PRAGMA user_version;');
-            // Create the settings table if it doesn't already exist
-            // If the table exists, this is skipped
-            // Type is just preparation for possibly different favorite types in the future
-            r = rs.rows.item(0).user_version
+            var tableInfo = tx.executeSql('PRAGMA table_info(' + tableName + ');');
+            var test = tableInfo.rows.items
+            var tableSchema = Storage.getSchema(tableName)
+            if (tableInfo.rows.length === 0){
+                query += "CREATE TABLE IF NOT EXISTS " + tableSchema.name + "("
+                for(var i in tableSchema.columns){
+                    query += tableSchema.columns[i].name + " "
+                            + tableSchema.columns[i].type + " "
+                            + tableSchema.columns[i].unique + " "
+                            + tableSchema.columns[i].null + " "
+                            + tableSchema.columns[i].defaultValue
+                    console.log(tableSchema.columns.indexOf(tableSchema.columns[i]), tableSchema.columns.length -1,tableSchema.columns.indexOf(tableSchema.columns[i]) -1 === tableSchema.columns.length)
+                    query += tableSchema.columns.indexOf(tableSchema.columns[i]) === tableSchema.columns.length -1 ? "":", "
+                }
+                query += ");"
+                tx.executeSql(query);
+                tableInfo = tx.executeSql('PRAGMA table_info(' + tableSchema.name + ');');
+                r = tableInfo.rows.length === 0 ?  false : true;
+            } else if (tableInfo.rows.length === tableSchema.columns.length){
+                r = true; //TODO: check column attributes
+            } else {
+                for(var i in tableSchema.columns){
+                    if (!attributeExists(tableInfo.rows,tableSchema.columns[i].name)){
+                        var oldLength = tableInfo.rows.length
+                        query = "ALTER TABLE " + tableSchema.name + " ADD " + tableSchema.columns[i].name + " "
+                                + tableSchema.columns[i].type + " "
+                                + tableSchema.columns[i].unique + " "
+                                + tableSchema.columns[i].null + " "
+                                + tableSchema.columns[i].defaultValue
+                        query += ";"
+                        tx.executeSql(query);
+                        tableInfo = tx.executeSql('PRAGMA table_info(' + tableSchema.name + ');');
+                        console.log("AlterTable result:",tableInfo.rows.length !== oldLength)
+                        r = true
+                    }
+                }
+            }
         });
     return r
 }
 
+
+function attributeExists(rows,value){
+    var exists = false
+    for (var index = 0; index < rows.length; index++) {
+        exists = rows.item(index).name === value
+        if (exists) break
+    }
+    return exists
+}
 
 // This function checks if the favorite already exists
 function favoritExists(coord) {
@@ -91,21 +132,21 @@ function addFavorite(name, coord, city, locationtype) {
     var db = getDatabase();
     var res = "";
     db.transaction(function(tx) {
-                       var rs = tx.executeSql('SELECT coord,name FROM favorites WHERE coord = ?', coord);
-                       if (rs.rows.length > 0) {
-                           res = "Not exist"
-                       }
-                       else {
-                           console.log(name, coord, city, locationtype)
-                           rs = tx.executeSql('INSERT INTO favorites (coord,type,api,name,city,LocationType) VALUES (?,?,?,?,?,?);', [coord,'normal',appWindow.currentApi,name,city,locationtype]);
-                           if (rs.rowsAffected > 0) {
-                               res = "OK";
-                           } else {
-                               res = "Error";
-                           }
-                       }
-                   });
-  // The function returns “OK” if it was successful, or “Error” if it wasn't
+        var rs = tx.executeSql('SELECT coord,name FROM favorites WHERE coord = ?', coord);
+        if (rs.rows.length > 0) {
+            res = "Not exist"
+        }
+        else {
+            console.log(name, coord, city, locationtype)
+            rs = tx.executeSql('INSERT INTO favorites (coord,type,api,name,city,LocationType) VALUES (?,?,?,?,?,?);', [coord,'normal',appWindow.currentApi,name,city,locationtype]);
+            if (rs.rowsAffected > 0) {
+                res = "OK";
+            } else {
+                res = "Error";
+            }
+        }
+    });
+    // The function returns “OK” if it was successful, or “Error” if it wasn't
   return res;
 }
 
@@ -154,22 +195,22 @@ function updateFavorite(name, coord, updatemodel) {
     var db = getDatabase();
     var res = "";
     db.transaction(function(tx) {
-                       var rs = tx.executeSql('SELECT coord,name FROM favorites WHERE coord = ?', coord);
-                       if (rs.rows.length != 1) {
-                           res = "Not exist"
-                       }
-                       else {
-                           rs = tx.executeSql('UPDATE favorites SET name = ? WHERE coord = ?', [name,coord]);
-                           if (rs.rowsAffected > 0) {
-                               res = "OK";
-                               updatemodel.clear()
-                               getFavorites(updatemodel)
-                           } else {
-                               res = "Error";
-                           }
-                       }
-                   });
-  // The function returns “OK” if it was successful, or “Error” if it wasn't
+        var rs = tx.executeSql('SELECT coord,name FROM favorites WHERE coord = ?', coord);
+        if (rs.rows.length != 1) {
+            res = "Not exist"
+        }
+        else {
+            rs = tx.executeSql('UPDATE favorites SET name = ? WHERE coord = ?', [name,coord]);
+            if (rs.rowsAffected > 0) {
+                res = "OK";
+                updatemodel.clear()
+                getFavorites(updatemodel)
+            } else {
+                res = "Error";
+            }
+        }
+    });
+    // The function returns “OK” if it was successful, or “Error” if it wasn't
   return res;
 }
 

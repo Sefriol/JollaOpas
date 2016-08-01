@@ -224,6 +224,7 @@ Page {
                 }
             }
             MenuItem {text: qsTr("Get return route"); onClicked: {Helper.switch_locations(from,to)}}
+            MenuItem {text: qsTr("Check Schema"); onClicked: {Favorites.checkSchema(Favorites.getDatabase(),"favorites")}}
             MenuItem {
                 visible: searchButtonDisabled
                 enabled: endpointsValid

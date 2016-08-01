@@ -35,7 +35,7 @@ Rectangle {
     ]
     BusyIndicator {
         id: busyIndicator
-        running: busyState
+        running: busyState ? busyState : false
         anchors.centerIn: statusIndicator // Place this similarly to statusIndicator
         size: tinyIndicator ? BusyIndicatorSize.ExtraSmall : BusyIndicatorSize.Small
         MouseArea {

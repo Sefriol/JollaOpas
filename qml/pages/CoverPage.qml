@@ -234,6 +234,7 @@ CoverBackground {
     signal clockTick()
     onClockTick: {
         var model = routeModel.get(coverView.currentIndex)
+        if(!model) return
         var stopTime = model.time
         timeLeftLabel.text = Helper.prettyTimeFromSeconds(Helper.timestampDifferenceInSeconds(null, stopTime))
     }
@@ -241,7 +242,7 @@ CoverBackground {
     signal updateLineImage(int index)
     onUpdateLineImage: {
         var model = routeModel.get(index)
-        lineImage.source ="qrc:/images/" + model.type + ".png"
+        lineImage.source = "qrc:/images/" + model.type + ".png"
         lineNumber.text = model.code ? model.code : model.length + " km"
     }
     function startCoverSearch(direction) {

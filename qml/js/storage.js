@@ -83,3 +83,45 @@ function getSetting(setting) {
   // For more advanced projects, this should probably be handled through error codes
   return res
 }
+
+function getSchema(tableName) {
+    switch(tableName){
+    case "favorites":
+        return favoritesTable()
+    case "favoriteRoutes":
+        return favoriteRoutesTable()
+    default:
+        return null
+    }
+}
+
+function favoritesTable(){
+    var favoritesTable = {}
+    favoritesTable.name = "favorites"
+    favoritesTable.columns = [
+                {name:"coord",type:"TEXT",unique:"UNIQUE",null:"", defaultValue:""},
+                {name:"type",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""},
+                {name:"api",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""},
+                {name:"name",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""},
+                {name:"city",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:"DEFAULT('address')"},
+                {name:"LocationType",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:"DEFAULT('Old favorite: Update')"}
+            ]
+    return favoritesTable
+
+}
+
+function favoriteRoutesTable(){
+    var favoriteRoutesTable = {}
+    favoriteRoutesTable.name = "favoriteRoutes"
+    favoriteRoutesTable.columns = [
+                {name:"routeIndex",type:"INTEGER",unique:"PRIMARY KEY AUTOINCREMENT",null:"", defaultValue:""},
+                {name:"type",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""},
+                {name:"api",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""},
+                {name:"fromCoord",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""},
+                {name:"fromName",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""},
+                {name:"toCoord",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""},
+                {name:"toName",type:"TEXT",unique:"", null:"NOT NULL", defaultValue:""}
+                ]
+    return favoriteRoutesTable
+
+}
