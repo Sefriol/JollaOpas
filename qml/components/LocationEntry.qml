@@ -84,7 +84,6 @@ Column {
         suggestionModel.source = ""
         textfield.text = ''
         destination_coord = ''
-        query.selectedIndex = -1
         locationDone("","")
     }
 
@@ -206,6 +205,7 @@ Column {
                 /* if only result, take it into use */
                 if(suggestionModel.count == 1) {
                     positionBusy: false
+                    gpsLoading: false
                     updateLocation(suggestionModel.get(0))
                 } else if (suggestionModel.count == 0) {
                     appWindow.useNotification( qsTr("No results") )
@@ -253,6 +253,7 @@ Column {
         height: textfield.height < (textfield.height/2 + textfield.height/1.5 +sourceLabel.height) ? (textfield.height/2 + textfield.height/1.5 +sourceLabel.height) : textfield.height
         onClicked: {
             var searchdialog = pageStack.push(Qt.resolvedUrl("../pages/SearchAddressPage.qml"))
+            pageStack.completeAnimation()
             searchdialog.searchType = "source"
             searchdialog.accepted.connect(function() {
                 updateLocation(searchdialog.selectObject)
@@ -264,7 +265,7 @@ Column {
             color: Theme.highlightColor
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            font.pixelSize: Theme.fontSizeSmall
+            font.pixelSize: Theme.fontSizeExtraLarge
             truncationMode: TruncationMode.Fade
 
             onTextChanged: {
@@ -275,7 +276,7 @@ Column {
                 text: qsTr("Location")
                 color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.verticalCenterOffset: -parent.height/1.5
+                anchors.verticalCenterOffset: -parent.height/1.8// * Theme.pixelRatio
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: Theme.fontSizeTiny
             }
@@ -298,6 +299,7 @@ Column {
         }
         IconButton {
             id: gpsButton
+            width: parent.width/3
             icon.source: "image://theme/icon-m-gps"
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -338,6 +340,7 @@ Column {
         }
         IconButton {
             id: favoritePicker
+            width: parent.width/3
             enabled: !disable_favorites
             visible: !disable_favorites
             icon.source: !isFavorite ? "image://theme/icon-m-favorite" : "image://theme/icon-m-favorite-selected"
@@ -384,6 +387,7 @@ Column {
         }
         IconButton {
             id: mapButton
+            width: parent.width/3
             icon.source: "image://theme/icon-m-location"
             icon.height: gpsButton.icon.height
             anchors.top: gpsButton.top

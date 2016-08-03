@@ -168,20 +168,13 @@ function addFavoriteRoute(type, api, fromCoord, fromName, toCoord, toName, updat
             }
         }
         else {
-            rs = tx.executeSql('SELECT routeIndex FROM favoriteRoutes WHERE type = ? AND api = ?', [type,api]);
-            // Check that there is still place for favoriteRoute (limited up to 4 per City)
-            if (rs.rows.length >= 4) {
-                res = "Error"
-            }
-            else {
-                rs = tx.executeSql('INSERT INTO favoriteRoutes (type,api,fromCoord,fromName,toCoord,toName) VALUES (?,?,?,?,?,?);', [type,api,fromCoord,fromName,toCoord,toName]);
-                if (rs.rowsAffected === 1) {
-                    updatemodel.clear()
-                    getFavoriteRoutes('normal',api,updatemodel)
-                    res = "OK";
-                } else {
-                    res = "Error";
-                }
+            rs = tx.executeSql('INSERT INTO favoriteRoutes (type,api,fromCoord,fromName,toCoord,toName) VALUES (?,?,?,?,?,?);', [type,api,fromCoord,fromName,toCoord,toName]);
+            if (rs.rowsAffected === 1) {
+                updatemodel.clear()
+                getFavoriteRoutes('normal',api,updatemodel)
+                res = "OK";
+            } else {
+                res = "Error";
             }
         }
     }

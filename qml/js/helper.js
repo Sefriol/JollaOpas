@@ -70,17 +70,14 @@ function first_station() {
 }
 
 function switch_locations(from, to) {
+    var tempObj = JSON.parse(JSON.stringify(from.destinationObject))
     var templo = from.destination_name
     var tempcoord = from.destination_coord
-    var tempindex = from.selected_favorite
 
     from.clear()
-    from.updateLocation(to.destination_name, 0, to.destination_coord)
-    from.selected_favorite = to.selected_favorite
-
+    from.updateLocation(to.destinationObject)
     to.clear()
-    to.updateLocation(templo, 0, tempcoord)
-    to.selected_favorite = tempindex
+    to.updateLocation(tempObj)
 }
 
 function parse_disruption_time(time) {

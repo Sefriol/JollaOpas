@@ -40,7 +40,6 @@ import "../components"
 
 Page {
     id: mainPage
-
     /* Current location acquired with GPS */
     property string currentCoord: ''
     property string currentName: ''
@@ -200,197 +199,22 @@ Page {
         anchors.centerIn: parent
         size: BusyIndicatorSize.Large
     }
-
-    SilicaFlickable {
+    CustomBottomDrawer {
+        id: drawer
         anchors.fill: parent
-        contentHeight: parent.height
-
-        PullDownMenu {
-            MenuItem { text: qsTr("Settings"); onClicked: { pageStack.push(Qt.resolvedUrl("SettingsPage.qml")) } }
-            MenuItem { text: qsTr("Exception info"); visible: appWindow.currentApi === "helsinki"; onClicked: pageStack.push(Qt.resolvedUrl("ExceptionsPage.qml")) }
-            MenuItem {
-                enabled: endpointsValid
-                text: qsTr("Add as favorite route");
-                onClicked: {
-                    var fromNameToAdd = fromName ? fromName : currentName
-                    var fromCoordToAdd = fromCoord ? fromCoord : currentCoord
-                    var res = Favorites.addFavoriteRoute('normal', appWindow.currentApi, fromCoordToAdd, fromNameToAdd, toCoord, toName, favoriteRoutesModel)
-                    if (res === "OK") {
-                        appWindow.useNotification( qsTr("Favorite route added") )
-                    }
-                    else {
-                        appWindow.useNotification( qsTr("Maximum amount of favorite routes is 4!") )
-                    }
-                }
-            }
-            MenuItem {text: qsTr("Get return route"); onClicked: {Helper.switch_locations(from,to)}}
-            MenuItem {text: qsTr("Check Schema"); onClicked: {Favorites.checkSchema(Favorites.getDatabase(),"favorites")}}
-            MenuItem {
-                visible: searchButtonDisabled
-                enabled: endpointsValid
-                text: qsTr("Search");
-                onClicked: {
-                    var parameters = {}
-                    setRouteParameters(parameters)
-                    pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
-                }
-            }
-        }
-
-        Spacing { id: topSpacing; anchors.top: parent.top; height: (Theme.fontSizeSmall + 5) * Theme.pixelRatio }
-
-        Column {
-            property bool dateNow
-            property bool customDate
-            function setTimeNow() {
-                myTime = new Date()
-                timeSwitch.storedDate = myTime
-                dateSwitch.storedDate = myTime
-                customDate = dateSwitch.customDate = false
-                dateNow = dateSwitch.dateToday = true
-            }
-
-            id: content_column
-            width: parent.width
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: topSpacing.bottom
-
-            Item {
-                width: parent.width
-                height: from.height + to.height
-                LocationEntry {
-                    id: from
-                    type: qsTr("From")
-                    isFrom: true
-                    onLocationDone: {
-                        fromName = name
-                        fromCoord = coord
-                    }
-                    onCurrentLocationDone: {
-                        currentName = name
-                        currentCoord = coord
-                    }
-                    onLocationError: {
-                        /* error in getting current position, cancel the wait */
-                        mainPage.state = "normal"
-                    }
-                }
-
-                Spacing { id: location_spacing; anchors.top: from.bottom; height: 5 }
-
-                LocationEntry {
-                    id: to
-                    type: qsTr("To")
-                    onLocationDone: {
-                        toName = name
-                        toCoord = coord
-                    }
-                    anchors.top: location_spacing.bottom
-                }
-
-            }
-            Spacing { id: when_spacing; height: 10 }
-            SpaceSeparator {
-                type: qsTr("When")
-            }
-
-            TimeTypeSwitch {
-                id: timeTypeSwitch
-            }
-            TimeSwitch {
-                id: timeSwitch
-                onStoredDateChanged: {
-                    myTime = dateSwitch.storedDate = timeSwitch.storedDate
-                }
-            }
-            DateSwitch {
-                id: dateSwitch
-                dateToday: dateNow
-                onHandleSwitchesCheckedState: {
-                    content_column.dateNow = dateSwitch.dateToday = dateNow
-                    content_column.customDate = dateSwitch.customDate = customDate
-                }
-                onStoredDateChanged: {
-                    myTime = timeSwitch.storedDate = dateSwitch.storedDate
-                }
-            }
-
-            Button {
-                visible: !searchButtonDisabled
-                anchors.horizontalCenter: parent.horizontalCenter
-                enabled: endpointsValid
-                text: qsTr("Search")
-                onClicked: {
-                    var parameters = {}
-                    setRouteParameters(parameters)
-                    pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
-                }
-            }
-        }
-
-        Spacing { id: favorites_spacing; anchors.top: content_column.bottom; height: (Theme.fontSizeSmall + 5) * Theme.pixelRatio }
-
-
-        Item {
-            id: headeritem
-            width: parent.width
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: favorites_spacing.bottom
-            height: (favoriteRouteHeader.height + Theme.fontSizeSmall) * Theme.pixelRatio
-            SpaceSeparator {
-                id: favoriteRouteHeader
-                type: qsTr("Favourites")
-            }
-        }
-
-        SilicaListView {
+        Component.onCompleted: startPoint = drawerheaderitem.y - ((Screen.height > 960) ? 0 : drawerheaderitem.height)
+        background: SilicaListView {
             id: favoriteRouteList
-            anchors.top: headeritem.bottom
-            anchors.bottom: parent.bottom
+            anchors.fill: parent
             width: parent.width
             model: favoriteRoutesModel
-            delegate: favoriteRouteManageDelegate
-            property Item contextMenu
-
-            ViewPlaceholder {
-                enabled: favoriteRouteList.count == 0
-                // Not perfect, but shows the text on Jolla Phone, Jolla Tablet and Fairphone2 (was -300)
-                verticalOffset: (favoriteRouteList.height - mainPage.height) * 0.5
-                text: qsTr("No saved favorite routes")
-            }
-
-            Component {
-                id: contextMenuComponent
-
-                ContextMenu {
-                    id: menu
-                    property Item currentItem
-                    MenuItem {
-                        text: qsTr("Add to Cover")
-                        onClicked: menu.currentItem.addToCover()
-                    }
-
-                    MenuItem {
-                        text: qsTr("Remove")
-                        onClicked: menu.currentItem.remove()
-                    }
-                }
-            }
-        }
-
-        ListModel {
-            id: favoriteRoutesModel
-        }
-
-        Component {
-            id: favoriteRouteManageDelegate
-
-            BackgroundItem {
-                id: rootItem
+            delegate: BackgroundItem {
+                id: rootItemDelegate
+                enabled: drawer.open
                 width: ListView.view.width
                 height: menuOpen ? Theme.itemSizeSmall + favoriteRouteList.contextMenu.height : Theme.itemSizeSmall
 
-                property bool menuOpen: favoriteRouteList.contextMenu != null && favoriteRouteList.contextMenu.parent === rootItem
+                property bool menuOpen: favoriteRouteList.contextMenu != null && favoriteRouteList.contextMenu.parent === rootItemDelegate
 
                 function addToCover() {
                     Favorites.addFavoriteRoute('cover', appWindow.currentApi, modelFromCoord, modelFromName, modelToCoord, modelToName)
@@ -398,7 +222,7 @@ Page {
                 }
 
                 function remove() {
-                    remorse.execute(rootItem, qsTr("Deleting"), function() {
+                    remorse.execute(rootItemDelegate, qsTr("Deleting"), function() {
                         Favorites.deleteFavoriteRoute(modelRouteIndex, appWindow.currentApi, favoriteRoutesModel)
                     })
                 }
@@ -418,14 +242,13 @@ Page {
                         favoriteRouteList.contextMenu = contextMenuComponent.createObject(favoriteRouteList)
                     }
 
-                    favoriteRouteList.contextMenu.currentItem = rootItem
-                    favoriteRouteList.contextMenu.show(rootItem)
+                    favoriteRouteList.contextMenu.currentItem = rootItemDelegate
+                    favoriteRouteList.contextMenu.show(rootItemDelegate)
                 }
-
                 Label {
                     id: label
-                    height: Theme.itemSizeSmall
                     text: modelFromName + " - " + modelToName + " "
+                    height: Theme.itemSizeSmall
                     width: parent.width - reverseFavoriteRouteButton.width
                     color: Theme.primaryColor
                     verticalAlignment: Text.AlignVCenter
@@ -448,6 +271,211 @@ Page {
                     }
                 }
                 RemorseItem { id: remorse }
+            }
+            property Item contextMenu
+
+            ViewPlaceholder {
+                enabled: favoriteRouteList.count == 0
+                // Not perfect, but shows the text on Jolla Phone, Jolla Tablet and Fairphone2 (was -300)
+                verticalOffset: (favoriteRouteList.height - mainPage.height) * 0.5
+                text: qsTr("No saved favorite routes")
+            }
+            Label {
+                text: qsTr("Press to expand")
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: Theme.fontSizeMedium
+                color: Theme.secondaryHighlightColor
+                visible: !drawer.open
+            }
+            Item {
+                id: headeritem
+                width: parent.width
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                height: (favoriteRouteHeader.height + Theme.fontSizeSmall) * Theme.pixelRatio
+                SpaceSeparator {
+                    id: favoriteRouteHeader
+                    type: qsTr("Favourites")
+                }
+            }
+            MouseArea {
+                enabled: !drawer.open
+                anchors.fill: favoriteRouteList
+                onClicked: drawer.open = favoriteRouteList.count == 0 ? false : true
+            }
+            VerticalScrollDecorator {}
+            Component {
+                id: contextMenuComponent
+
+                ContextMenu {
+                    id: menu
+                    property Item currentItem
+                    MenuItem {
+                        text: qsTr("Add to Cover")
+                        onClicked: menu.currentItem.addToCover()
+                    }
+
+                    MenuItem {
+                        text: qsTr("Remove")
+                        onClicked: menu.currentItem.remove()
+                    }
+                }
+            }
+        }
+        SilicaFlickable {
+            id: formContainer
+            anchors.fill: parent
+            contentHeight: parent.height
+
+            PullDownMenu {
+                enabled: !drawer.open
+                MenuItem { text: qsTr("Settings"); onClicked: { pageStack.push(Qt.resolvedUrl("SettingsPage.qml")) } }
+                MenuItem { text: qsTr("Exception info"); visible: appWindow.currentApi === "helsinki"; onClicked: pageStack.push(Qt.resolvedUrl("ExceptionsPage.qml")) }
+                MenuItem {
+                    enabled: endpointsValid
+                    text: qsTr("Add as favorite route");
+                    onClicked: {
+                        var fromNameToAdd = fromName ? fromName : currentName
+                        var fromCoordToAdd = fromCoord ? fromCoord : currentCoord
+                        var res = Favorites.addFavoriteRoute('normal', appWindow.currentApi, fromCoordToAdd, fromNameToAdd, toCoord, toName, favoriteRoutesModel)
+                        if (res === "OK") {
+                            appWindow.useNotification( qsTr("Favorite route added") )
+                        }
+                    }
+                }
+                MenuItem {text: qsTr("Get return route"); onClicked: {Helper.switch_locations(from,to)}}
+                //MenuItem {text: qsTr("Check Schema"); onClicked: {Favorites.checkSchema(Favorites.getDatabase(),"favorites")}}
+                MenuItem {
+                    visible: searchButtonDisabled
+                    enabled: endpointsValid
+                    text: qsTr("Search");
+                    onClicked: {
+                        var parameters = {}
+                        setRouteParameters(parameters)
+                        pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                    }
+                }
+            }
+
+            Spacing { id: topSpacing; anchors.top: parent.top; height: (Theme.fontSizeSmall + 5) * Theme.pixelRatio }
+            MouseArea {
+                enabled: drawer.open
+                anchors.fill: content_column
+                onClicked: drawer.open = false
+            }
+            Column {
+                id: content_column
+                width: parent.width
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: topSpacing.bottom
+                enabled: !drawer.opened
+
+                property bool dateNow
+                property bool customDate
+                function setTimeNow() {
+                    myTime = new Date()
+                    timeSwitch.storedDate = myTime
+                    dateSwitch.storedDate = myTime
+                    customDate = dateSwitch.customDate = false
+                    dateNow = dateSwitch.dateToday = true
+                }
+                Item {
+                    width: parent.width
+                    height: from.height + to.height
+                    LocationEntry {
+                        id: from
+                        type: qsTr("From")
+                        isFrom: true
+                        onLocationDone: {
+                            fromName = name
+                            fromCoord = coord
+                        }
+                        onCurrentLocationDone: {
+                            currentName = name
+                            currentCoord = coord
+                        }
+                        onLocationError: {
+                            /* error in getting current position, cancel the wait */
+                            mainPage.state = "normal"
+                        }
+                    }
+
+                    Spacing { id: location_spacing; anchors.top: from.bottom; height: 5 }
+
+                    LocationEntry {
+                        id: to
+                        type: qsTr("To")
+                        onLocationDone: {
+                            toName = name
+                            toCoord = coord
+                        }
+                        anchors.top: location_spacing.bottom
+                    }
+
+                }
+                Spacing { id: when_spacing; height: 10 }
+                SpaceSeparator {
+                    type: qsTr("When")
+                }
+
+                TimeTypeSwitch {
+                    id: timeTypeSwitch
+                }
+                TimeSwitch {
+                    id: timeSwitch
+                    onStoredDateChanged: {
+                        myTime = dateSwitch.storedDate = timeSwitch.storedDate
+                    }
+                }
+                DateSwitch {
+                    id: dateSwitch
+                    dateToday: dateNow
+                    onHandleSwitchesCheckedState: {
+                        content_column.dateNow = dateSwitch.dateToday = dateNow
+                        content_column.customDate = dateSwitch.customDate = customDate
+                    }
+                    onStoredDateChanged: {
+                        myTime = timeSwitch.storedDate = dateSwitch.storedDate
+                    }
+                }
+
+                Button {
+                    visible: !searchButtonDisabled
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    enabled: endpointsValid
+                    text: qsTr("Search")
+                    onClicked: {
+                        var parameters = {}
+                        setRouteParameters(parameters)
+                        pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                    }
+                }
+            }
+
+            Spacing { id: favorites_spacing; anchors.top: content_column.bottom; height: (Theme.fontSizeSmall + 5) * Theme.pixelRatio }
+
+
+            Item {
+                id: drawerheaderitem
+                width: parent.width
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: favorites_spacing.bottom
+                height: (favoriteRouteHeader.height + Theme.fontSizeSmall) * Theme.pixelRatio
+                Label {
+                    text: qsTr("Favourites")
+                    color: Theme.highlightColor
+                    anchors.bottom: parent.top
+                    anchors.bottomMargin: 5
+                    anchors.right: parent.right
+                    anchors.rightMargin: Theme.horizontalPageMargin
+                    font.pixelSize: Theme.fontSizeSmall
+                    truncationMode: TruncationMode.Fade
+                    horizontalAlignment: Text.AlignRight
+                }
+            }
+            ListModel {
+                id: favoriteRoutesModel
             }
         }
     }

@@ -71,10 +71,11 @@ BackgroundItem {
     }
     IconButton {
         id: clockNowButton
+        width: parent.width/4
         icon.source: "image://theme/icon-m-watch"
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.horizontalCenter
-        anchors.leftMargin: 5
+        anchors.leftMargin: -15
         onClicked: {
             content_column.setTimeNow()
         }
@@ -83,8 +84,8 @@ BackgroundItem {
             text: qsTr("Now")
             color: clockNowButton.highlighted ? Theme.highlightColor : Theme.primaryColor
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.right
-            anchors.leftMargin: -10
+            anchors.left: parent.horizontalCenter
+            anchors.leftMargin: 25
             font.pixelSize: Theme.fontSizeTiny
         }
     }
