@@ -15,12 +15,12 @@ Meegopas is a journey planner running on Meego/Nokia N9 written by Jukka Nousiai
 
 Dev TODO
 ------
-- Fix Cover destination text space
-- Fix Cover Transportation method anchors
-- Marker for current location in normal mapview
-- Change starting location for normal map depending on the city
-- Fix opacity on the custom docker
-- Fix GPS indicator color
-- Improve favourite routes
-- Make favorites' rows more destinct
-- Keep the lates search in the page stack
+- [x] Fix Cover destination text space
+- [x] Fix Cover Transportation method anchors
+- [x] Marker for current location in normal mapview
+- [ ] Change starting location for normal map depending on the city
+- [x] Fix opacity on the custom docker
+- [x] Fix GPS indicator color
+- [ ] Improve favourite routes
+- [x] Make favorites' rows more destinct
+- [x] Keep the lates search in the page stack
