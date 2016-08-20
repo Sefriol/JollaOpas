@@ -24,3 +24,4 @@ Dev TODO
 - [x] Make favorites' rows more destinct
 - [x] Keep the lates search in the page stack
 - [ ] Add a colorcoded list of busses to ResultMapPage
+- [ ] Add Finnish translations for the new items
