@@ -18,9 +18,9 @@ Dev TODO
 - [x] Fix Cover destination text space
 - [x] Fix Cover Transportation method anchors
 - [x] Marker for current location in normal mapview
-- [ ] Change starting location for normal map depending on the city
+- [x] Change starting location for LocationMapPage depending on the city
 - [x] Fix opacity on the custom docker
 - [x] Fix GPS indicator color
-- [ ] Improve favourite routes
 - [x] Make favorites' rows more destinct
 - [x] Keep the lates search in the page stack
+- [ ] Add a colorcoded list of busses to ResultMapPage
