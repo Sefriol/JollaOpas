@@ -60,7 +60,7 @@ CoverBackground {
         width: parent.width-12
         anchors.left: appCover.left
         anchors.leftMargin: 6
-        spacing: 10
+        spacing: 0
         visible: false
 
         Row {
@@ -126,7 +126,7 @@ CoverBackground {
             clip: true  // this is needed so that only one leg is shown in the cover
             width: parent.width
 
-            height: 120
+            height: 130
             color: "transparent"
 
             ListView {
@@ -169,20 +169,22 @@ CoverBackground {
                 }
             }
         }
-        Row{
+        Row {
             width: parent.width
             Image {
                 id: lineImage
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 width: parent.width * 1/3
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenter: lineNumber.verticalCenter
+                anchors.verticalCenterOffset: timeLeftLabel.height/2
             }
             Label {
                 id: lineNumber
                 width: parent.width * 2/3
                 font.pixelSize: Theme.fontSizeExtraLarge
                 horizontalAlignment: Text.AlignHCenter
+                anchors.top: parent.top
                 Label {
                     id: timeLeftLabel
                     font.pixelSize: Theme.fontSizeMedium

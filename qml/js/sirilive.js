@@ -125,7 +125,7 @@ LiveResult.prototype.parse_json = function(vehicles, parent) {
     for (var monitoredVehicle in vehicles.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity) {
         var vehicleData = vehicles.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[monitoredVehicle]
         var code = vehicleData.MonitoredVehicleJourney.LineRef.value
-        var color = "#08a7cc"
+        var color = vehicleData.MonitoredVehicleJourney.DirectionRef.value === "1" ? "#08a7cc" : "#cc2d08"
         var vehicleTypeAndCode = {};
         if (parent.api_type !== 'helsinki') {
             // No JORE codes in use outside of Helsinki

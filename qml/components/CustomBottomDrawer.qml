@@ -32,7 +32,7 @@
 **
 ****************************************************************************************/
 
-import QtQuick 2.0
+import QtQuick 2.1
 import Sailfish.Silica 1.0
 
 Item {
@@ -64,7 +64,7 @@ Item {
     Behavior on backgroundSize {
         NumberAnimation {
             id: menuProgressAnimation
-            duration: 300
+            duration: 200
             easing.type: Easing.InOutQuad
         }
     }
@@ -117,7 +117,7 @@ Item {
         id: dimmerRect
         anchors.fill: foregroundItem
         color: Theme.highlightDimmerColor
-
+        z:1000
         // The dimmed rectangle provides a seam between the background and foreground.  It shouldn't
         // pop in instantly but should be distinct for the majority of the animation so the animation
         // easing is cubic instead of the normal quad.
@@ -125,7 +125,7 @@ Item {
         Behavior on opacity {
             NumberAnimation {
                 id: backgroundOpacityAnimation
-                duration: 300
+                duration: 200
                 easing.type: Easing.InOutCubic
             }
         }

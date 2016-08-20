@@ -39,6 +39,7 @@ import "../components"
 
 Dialog {
     id: favorites_page
+    canAccept: !query
     property bool query: false
     property variant selectedObject
     property bool selectedItem: false
@@ -58,7 +59,7 @@ Dialog {
         delegate: favoritesManageDelegate
         VerticalScrollDecorator {}
 
-        header: query ? dialogHeader : header
+        header: header
 
         ViewPlaceholder {
             enabled: list.count == 0
@@ -100,12 +101,19 @@ Dialog {
                 })
 
             }
-            onPressed: {
+            Rectangle {
+                anchors.fill: parent
+                opacity: (index % 2) * 0.1
+                z:-1
+                color: Theme.primaryColor
+            }
+            onClicked: {
                 rootItem.renameItem ? labelTextField.forceActiveFocus() : false
                 selectedObject = favoritesModel.get(index)
                 list.selectedItem ? list.selectedItem.highlighted = false : false
                 list.selectedItem = rootItem
                 rootItem.highlighted = true
+                favorites_page.accept()
             }
             onPressAndHold: {
                 if (!list.contextMenu) {
@@ -121,7 +129,7 @@ Dialog {
                 width: parent.width/5
                 text: Helper.capitalize_string(locationType)
                 font.italic: true
-                font.pixelSize: Theme.fontSizeExtraSmall
+                font.pixelSize: Theme.fontSizeSmall
                 anchors.left: parent.left
                 anchors.leftMargin: Theme.horizontalPageMargin
                 anchors.verticalCenter: parent.verticalCenter
@@ -136,7 +144,7 @@ Dialog {
                 anchors.left: title.right
                 anchors.leftMargin: Theme.paddingSmall
                 anchors.bottom: title.bottom
-                font.pixelSize: Theme.fontSizeSmall
+                font.pixelSize: Theme.fontSizeMedium
                 color: Theme.primaryColor
                 verticalAlignment: Text.AlignVCenter
             }
@@ -148,7 +156,7 @@ Dialog {
                 anchors.left: title.right
                 anchors.leftMargin: -Theme.paddingLarge
                 anchors.top: parent.top
-                anchors.topMargin: Theme.paddingSmall
+                anchors.topMargin: Theme.paddingMedium
                 color: Theme.primaryColor
                 EnterKey.onClicked: {
                     renameItem = false
@@ -162,7 +170,7 @@ Dialog {
                 width: parent.width/5
                 text: qsTr("City")
                 font.italic: true
-                font.pixelSize: Theme.fontSizeTiny
+                font.pixelSize: Theme.fontSizeExtraSmall
                 anchors.top: title.bottom
                 anchors.topMargin: renameItem ? Theme.paddingMedium : 0
                 anchors.left: parent.left
@@ -177,7 +185,7 @@ Dialog {
                 anchors.topMargin: renameItem ? Theme.paddingMedium : 0
                 anchors.left: citytitle.right
                 anchors.leftMargin: Theme.paddingSmall
-                font.pixelSize: Theme.fontSizeExtraSmall
+                font.pixelSize: Theme.fontSizeSmall
                 color: Theme.primaryColor
                 verticalAlignment: Text.AlignVCenter
             }
@@ -198,15 +206,15 @@ Dialog {
         }
     }
     Component {
-        id: dialogHeader
-        DialogHeader {
-            acceptText: qsTr("Select")
-        }
-    }
-    Component {
         id: header
         PageHeader {
-            title: qsTr("Manage favorite places")
+            title: query ? qsTr("Select") : qsTr("Manage favorite places")
+            Rectangle {
+                anchors.fill: parent
+                opacity: 0.1
+                z:-1
+                color: Theme.primaryColor
+            }
         }
     }
 }

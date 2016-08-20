@@ -116,14 +116,13 @@ function get_time_difference_in_minutes(earlierDate,laterDate)
 }
 
 function locTypeIdToTxt(locTypeId) {
-    /* Input
+    /* ---Input---
        Name: locTypeId
        Type: Number
        Description: Location type id of the location (1-9 and 1008 = poi, 10 = stop, 900 = address)
-       Output
+       ---Output---
        Type: String
        Description: Location as a matching string or invalid type string*/
-    console.log("LOCATIONTYPEID",locTypeId)
     if (1 <= locTypeId <= 9 || locTypeId === 1008)
         return qsTr("Place of interest")
     else if (locTypeId === 10)
@@ -201,7 +200,7 @@ reittiopas.prototype.api_request = function() {
     for(var p in this.parameters) {
         query.push(p + "=" + this.parameters[p])
     }
-    //console.debug( API[this.api_type].URL + '?' + query.join('&'))
+    console.debug( API[this.api_type].URL + '?' + query.join('&'))
     _http_request.open("GET", API[this.api_type].URL + '?' + query.join('&'))
     _http_request.send()
 }

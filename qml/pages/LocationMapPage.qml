@@ -105,7 +105,7 @@ Dialog {
         }
 
         Component.onCompleted: {
-            getLocationInitialize(inputCoord ? inputCoord : "24.9384,60.1699", inputCoord ? true : false)
+            getLocationInitialize(inputCoord ? inputCoord : Storage.getSetting("api") === "helsinki" ? "24.9407379411,60.1687069096" : "23.7667000000,61.5000000000", inputCoord ? true : false)
             findLocation = true
             panningDelayTimer.start() // Workaround to wait for small delay before panning to ensure that all tiles are loaded correctly when panning
         }
@@ -157,7 +157,7 @@ Dialog {
             BusyIndicator {
                 id: busyIndicator
                 running: suggestionModel.status === XmlListModel.Loading
-                anchors.centerIn: statusIndicator // Place this similarly to statusIndicator
+                anchors.centerIn: statusIndicator
                 size: BusyIndicatorSize.Small
                 MouseArea {
                     id: spinnerMouseArea

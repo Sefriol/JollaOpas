@@ -234,7 +234,9 @@ Page {
                     parameters.from = modelFromCoord
                     parameters.to_name = modelToName
                     parameters.to = modelToCoord
-                    pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                    drawer.open = false
+                    pageStack.pushAttached(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                    pageStack.navigateForward()
                 }
 
                 onPressAndHold: {
@@ -267,7 +269,8 @@ Page {
                         parameters.from = modelToCoord
                         parameters.to_name = modelFromName
                         parameters.to = modelFromCoord
-                        pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.pushAttached(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.navigateForward()
                     }
                 }
                 RemorseItem { id: remorse }
@@ -353,7 +356,8 @@ Page {
                     onClicked: {
                         var parameters = {}
                         setRouteParameters(parameters)
-                        pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.pushAttached(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.navigateForward()
                     }
                 }
             }

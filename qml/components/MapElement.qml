@@ -465,7 +465,13 @@ Item {
         var array = coord.split(',')
         flickable_map.panToCoordinate(QtPositioning.coordinate(array[1],array[0]))
         flickable_map.addMapItem(press_position)
-        //Helper.clear_objects()
+        flickable_map.addMapItem(current_position)
+//        console.log(current_position.coordinate,
+//                    current_position.visible,
+//                    positionSource.position.latitudeValid,
+//                    positionSource.position.longitudeValid,
+//                    positionSource.position.horizontalAccuracy > 0,
+//                    positionSource.position.horizontalAccuracy < 100)
     }
 
     function initialize(multipleRoutes) {

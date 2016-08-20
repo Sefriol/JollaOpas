@@ -42,13 +42,16 @@ Component {
         highlighted: true
 
         onClicked: {
-            pageStack.push(Qt.resolvedUrl("../pages/RoutePage.qml"), { route_index: index,
-                               header: search_parameters.from_name + " - " + search_parameters.to_name,
-                               duration: duration,
-                               walking: Math.floor(walk/100)/10,
-                               start_time: start,
-                               finish_time: finish
-                           })
+            pageStack.pushAttached(Qt.resolvedUrl("../pages/RoutePage.qml"),
+                                   {
+                                       route_index: index,
+                                       header: search_parameters.from_name + " - " + search_parameters.to_name,
+                                       duration: duration,
+                                       walking: Math.floor(walk/100)/10,
+                                       start_time: start,
+                                       finish_time: finish
+                                   })
+            pageStack.navigateForward()
         }
 
         Column {

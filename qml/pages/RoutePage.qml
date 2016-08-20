@@ -44,7 +44,6 @@ Page {
     property string start_time
     property string finish_time
     property string routeDetails: ""
-
     Component.onCompleted: {
         var route = Reittiopas.get_route_instance()
         route.dump_legs(route_index, routeModel)
@@ -132,10 +131,21 @@ Page {
 
         header: Column {
             width: parent.width
-            PageHeader {
-                title: qsTr("%1 minutes").arg(duration)
+            Clock {
+                running: Qt.application.active
+                height: 60
+                font.pixelSize: Theme.fontSizeExtraLarge
+                anchors.horizontalCenter: parent.horizontalCenter
             }
-
+            Label {
+                width: parent.width
+                text: qsTr("%1 minutes").arg(duration)
+                color: Theme.highlightColor
+                horizontalAlignment: Text.AlignRight
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.paddingSmall
+                wrapMode: Text.WordWrap
+            }
             Label {
                 width: parent.width
                 text: qsTr("Walking %1 km").arg(walking)

@@ -92,7 +92,7 @@ Page {
         id: footer
 
         ListItem {
-            height: Theme.itemSizeExtraSmall
+            height: 120
             visible: !busyIndicator.running
 
             onClicked: {
@@ -106,7 +106,7 @@ Page {
             }
 
             Label {
-                text: qsTr("Next") + " (+15 min)"
+                text: qsTr("Next") + " (" + Qt.formatDateTime(search_parameters.time,"hh:mm") + " +15 min)"
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 anchors.verticalCenter: parent.verticalCenter
@@ -126,19 +126,20 @@ Page {
         interactive: !busyIndicator.running
         header: Column {
             width: parent.width
-            PageHeader {
-                title: search_parameters.timetype == "departure" ?
-                           qsTr("Departure") + " " + Qt.formatDateTime(search_parameters.time,"dd.MM hh:mm") :
-                           qsTr("Arrival") + " " + Qt.formatDateTime(search_parameters.time,"dd.MM hh:mm")
+            Clock {
+                running: Qt.application.active
+                height: 60
+                font.pixelSize: Theme.fontSizeExtraLarge
+                anchors.horizontalCenter: parent.horizontalCenter
             }
-
-            Label {
-                width: parent.width
-                text: search_parameters.from_name + " - " + search_parameters.to_name + " "
-                color: Theme.highlightColor
-                horizontalAlignment: Text.AlignRight
-                wrapMode: Text.WordWrap
-            }
+//            Label {
+//                width: parent.width
+//                text: search_parameters.timetype == "departure" ?
+//                           qsTr("Departure") + " " + Qt.formatDateTime(search_parameters.time,"dd.MM hh:mm") :
+//                           qsTr("Arrival") + " " + Qt.formatDateTime(search_parameters.time,"dd.MM hh:mm")
+//                color: Theme.highlightColor
+//                horizontalAlignment: Text.AlignRight
+//            }
 
             ListItem {
                 height: Theme.itemSizeExtraSmall
@@ -155,7 +156,7 @@ Page {
                 }
 
                 Label {
-                    text: qsTr("Previous") + " (-15 min)"
+                    text: qsTr("Previous") + " (" + Qt.formatDateTime(search_parameters.time,"hh:mm") +" -15 min)"
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     anchors.verticalCenter: parent.verticalCenter
@@ -163,6 +164,27 @@ Page {
                 }
             }
             Spacing{id: headerSpacing; height: 10}
+            ListItem {
+                height: from_label.height
+                visible: !busyIndicator.running
+
+                Label {
+                    id:from_label
+                    width: parent.width
+                    text: search_parameters.from_name
+                    color: Theme.highlightColor
+                    horizontalAlignment: Text.AlignLeft
+                    wrapMode: Text.WordWrap
+                }
+                Label {
+                    id:to_label
+                    width: parent.width
+                    text: search_parameters.to_name
+                    color: Theme.highlightColor
+                    horizontalAlignment: Text.AlignRight
+                    wrapMode: Text.WordWrap
+                }
+            }
         }
 
         ViewPlaceholder {

@@ -38,12 +38,5 @@ Rectangle {
         running: busyState ? busyState : false
         anchors.centerIn: statusIndicator // Place this similarly to statusIndicator
         size: tinyIndicator ? BusyIndicatorSize.ExtraSmall : BusyIndicatorSize.Small
-        MouseArea {
-            id: spinnerMouseArea
-            anchors.fill: parent
-            onClicked: {
-                suggestionModel.source = ""
-            }
-        }
     }
 }

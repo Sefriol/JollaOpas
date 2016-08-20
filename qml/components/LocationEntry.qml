@@ -48,10 +48,10 @@ Column {
     property alias current_name : statusIndicator.validateState
     property string current_coord : ''
 
-    property alias positionBusy: statusIndicator.busyState
+    property alias positionFound: statusIndicator.busyState
     property alias gpsLoading: statusIndicator.sufficientState
     gpsLoading: false
-    positionBusy:false
+    positionFound:false
 
     Location {
         id: previousCoord
@@ -110,7 +110,7 @@ Column {
 
     function updateCurrentLocation(object) {
         currentLocationModel.source = ""
-        var address = object.name
+        var address = object.name.split(',', 1).toString()
 
         if(object.housenumber && address.slice(address.length - object.housenumber.length) != object.housenumber)
             address += " " + object.housenumber
@@ -118,9 +118,9 @@ Column {
         current_name = address
         current_coord = object.coord
 
-        textfield.placeholderText = address
-        isFavorite = Favorites.favoritExists(suggestionModel.get(0).coord)
-        currentLocationDone(address, coord)
+        textfield.text = address
+        isFavorite = Favorites.favoritExists(object.coord)
+        currentLocationDone(address, object.coord)
     }
 
     Timer {
@@ -141,8 +141,8 @@ Column {
 
     function getCurrentCoord() {
         /* wait until position is accurate enough */
-        if(positionValid(positionSource.position)){
-            if(positionSource.position.horizontalAccuracy > 0 && positionSource.position.horizontalAccuracy < 100) {
+        if(positionSource.supportedPositioningMethods !== PositionSource.NoPositioningMethods){
+            if(positionValid(positionSource.position) && positionSource.position.horizontalAccuracy > 0 && positionSource.position.horizontalAccuracy < 100) {
                 gpsTimer.stop()
                 previousCoord.coordinate.latitude = positionSource.position.coordinate.latitude
                 previousCoord.coordinate.longitude = positionSource.position.coordinate.longitude
@@ -204,7 +204,7 @@ Column {
             if(status == XmlListModel.Ready && source != "") {
                 /* if only result, take it into use */
                 if(suggestionModel.count == 1) {
-                    positionBusy: false
+                    positionFound: true
                     gpsLoading: false
                     updateLocation(suggestionModel.get(0))
                 } else if (suggestionModel.count == 0) {
@@ -305,19 +305,22 @@ Column {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: -parent.width/4
             onClicked: {
-                positionBusy: true
-                if (positionValid(positionSource.position)) {
+                positionFound: false
+                console.log(positionSource.supportedPositioningMethods, PositionSource.NoPositioningMethods)
+                if (positionSource.supportedPositioningMethods !== PositionSource.NoPositioningMethods) {
                     gpsLoading = true
                     var sourceOrFalse = getCurrentCoord()
                     if (sourceOrFalse){
-                        suggestionModel.source = sourceOrFalse
+                        currentLocationModel.source = sourceOrFalse
                     } else {
-                        positionBusy: false
+                        positionFound: false
+                        gpsLoading: false
                         appWindow.useNotification(qsTr("Positioning service not available"))
                     }
                 }
                 else {
-                    positionBusy: false
+                    positionFound: false
+                    gpsLoading: false
                     appWindow.useNotification(qsTr("Positioning service not available"))
                 }
             }

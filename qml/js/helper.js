@@ -147,7 +147,7 @@ function prettyTimeFromSeconds(seconds) {
         // if the time is over an hour ago, add hours and zeropadding to the minute
         if (hours > 0) {
             hoursString = hours + ":"
-            minutes = addZeroPadding(minutes)
+            minutes = ('0' + minutes.toString()).slice(-2)
         }
     }
     return prefix + hoursString + minutes + ":" + ('0' + remainingSeconds.toString()).slice(-2)
