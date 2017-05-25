@@ -40,9 +40,6 @@ import "../js/favorites.js" as Favorites
 
 Column {
     property alias type : label.type
-    property string font
-    property string lineHeightMode
-    property string lineHeight
     property alias textfield : textfield.text
 
     property alias current_name : statusIndicator.validateState
@@ -50,8 +47,6 @@ Column {
 
     property alias positionFound: statusIndicator.busyState
     property alias gpsLoading: statusIndicator.sufficientState
-    gpsLoading: false
-    positionFound:false
 
     Location {
         id: previousCoord
@@ -77,7 +72,8 @@ Column {
     signal locationError()
 
     Component.onCompleted: {
-        //Favorites.initialize()
+        gpsLoading: false
+        positionFound:false
     }
 
     function clear() {
@@ -141,20 +137,16 @@ Column {
 
     function getCurrentCoord() {
         /* wait until position is accurate enough */
-        if(positionSource.supportedPositioningMethods !== PositionSource.NoPositioningMethods){
-            if(positionValid(positionSource.position) && positionSource.position.horizontalAccuracy > 0 && positionSource.position.horizontalAccuracy < 100) {
-                gpsTimer.stop()
-                previousCoord.coordinate.latitude = positionSource.position.coordinate.latitude
-                previousCoord.coordinate.longitude = positionSource.position.coordinate.longitude
-                return Reittiopas.get_reverse_geocode(previousCoord.coordinate.latitude.toString(),
-                                                      previousCoord.coordinate.longitude.toString(),
-                                                            Storage.getSetting('api'))
-            } else {
-                /* poll again in 200ms */
-                gpsTimer.start()
-            }
+        if(positionValid(positionSource.position) && positionSource.position.horizontalAccuracy > 0 && positionSource.position.horizontalAccuracy < 100) {
+            gpsTimer.stop()
+            previousCoord.coordinate.latitude = positionSource.position.coordinate.latitude
+            previousCoord.coordinate.longitude = positionSource.position.coordinate.longitude
+            currentLocationModel.source = Reittiopas.get_reverse_geocode(previousCoord.coordinate.latitude.toString(),
+                                                  previousCoord.coordinate.longitude.toString(),
+                                                        Storage.getSetting('api'))
         } else {
-            return false
+            /* poll again in 200ms */
+            gpsTimer.start()
         }
     }
 
@@ -167,7 +159,7 @@ Column {
             if(previousCoord.coordinate.latitude != 0 &&
                     previousCoord.coordinate.longitude != 0 &&
                     position.coordinate.distanceTo(previousCoord) > 250) {
-                getCurrentCoord() ? gpsTimer.start() : currentLocationModel.source = getCurrentCoord()
+                getCurrentCoord()
             }
         }
     }
@@ -306,12 +298,14 @@ Column {
             anchors.horizontalCenterOffset: -parent.width/4
             onClicked: {
                 positionFound: false
-                console.log(positionSource.supportedPositioningMethods, PositionSource.NoPositioningMethods)
                 if (positionSource.supportedPositioningMethods !== PositionSource.NoPositioningMethods) {
                     gpsLoading = true
-                    var sourceOrFalse = getCurrentCoord()
-                    if (sourceOrFalse){
-                        currentLocationModel.source = sourceOrFalse
+                    if(positionSource.position.latitudeValid && positionSource.position.longitudeValid) {
+                        suggestionModel.source = Reittiopas.get_reverse_geocode(positionSource.position.coordinate.latitude.toString(),
+                                                                                positionSource.position.coordinate.longitude.toString(),
+                                                                                Storage.getSetting('api'))
+                        positionFound: true
+                        gpsLoading: false
                     } else {
                         positionFound: false
                         gpsLoading: false
