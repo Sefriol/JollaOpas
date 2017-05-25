@@ -107,7 +107,7 @@ function convTime(hslTime){
                     parseInt(time.slice(6,8), 10),
                     time.slice(8,10),
                     time.slice(10,12),
-                    00, 00);
+                    0, 0);
 }
 
 function get_time_difference_in_minutes(earlierDate,laterDate)
@@ -229,7 +229,7 @@ function route_search(parameters, route_model, api_type) {
     this.api_type = api_type
     this.model = route_model
 
-    this.time = parameters.time
+    this.jstime = parameters.jstime
 
     this.last_route_index = -1
 
@@ -237,12 +237,10 @@ function route_search(parameters, route_model, api_type) {
     this.to_name = parameters.to_name
 
     this.parameters = parameters
-    delete this.parameters.from_name
-    delete this.parameters.to_name
     delete this.parameters.time
 
-    this.parameters.date = Qt.formatDate(this.time, "yyyyMMdd")
-    this.parameters.time = Qt.formatTime(this.time, "hhmm")
+    this.parameters.date = Qt.formatDate(this.jstime, "yyyyMMdd")
+    this.parameters.time = Qt.formatTime(this.jstime, "hhmm")
 
     this.parameters.format = "json"
     this.parameters.request = "route"
@@ -320,11 +318,11 @@ route_search.prototype.parse_json = function(routes, parent) {
             /* update the first and last time using any other transportation than walking */
             if(!output.first_transport && legdata.type != "walk")
                 output.first_transport = convTime(legdata.locs[0].depTime)
-            if(legdata.type != "walk")
+            if(legdata.type !== "walk")
                 output.last_transport = convTime(legdata.locs[legdata.locs.length - 1].arrTime)
 
             // amount of walk in the route
-            if(legdata.type == "walk")
+            if(legdata.type === "walk")
                 output.walk += legdata.length
         }
         parent.last_result.push(output)
@@ -333,8 +331,8 @@ route_search.prototype.parse_json = function(routes, parent) {
 }
 
 route_search.prototype.result_handler = function() {
-    if (_http_request.readyState == XMLHttpRequest.DONE) {
-        if (_http_request.status != 200 && _http_request.status != 304) {
+    if (_http_request.readyState === XMLHttpRequest.DONE) {
+        if (_http_request.status !== 200 && _http_request.status !== 304) {
             //console.debug('HTTP error ' + _http_request.status)
             this.model.done = true
             return
@@ -360,7 +358,7 @@ route_search.prototype.dump_stops = function(index, model) {
     for (var locindex in legdata.locs) {
         var locdata = legdata.locs[locindex]
         /* for walking add only first and last "stop" */
-        if(legdata.type == "walk" && locindex != 0 && locindex != legdata.locs.length - 1) { }
+        if(legdata.type == "walk" && locindex !== 0 && locindex !== legdata.locs.length - 1) { }
         else {
             model.append(legdata.locs[locindex])
         }
@@ -413,8 +411,8 @@ function location_to_address(latitude, longitude, model, api_type) {
 }
 
 location_to_address.prototype.positioning_handler = function() {
-    if (_http_request.readyState == XMLHttpRequest.DONE) {
-        if (_http_request.status != 200 && _http_request.status != 304) {
+    if (_http_request.readyState === XMLHttpRequest.DONE) {
+        if (_http_request.status !== 200 && _http_request.status !== 304) {
             //console.debug('HTTP error ' + _http_request.status)
             this.model.done = true
             return

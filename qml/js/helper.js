@@ -70,7 +70,7 @@ function first_station() {
 }
 
 function switch_locations(from, to) {
-    var tempObj = JSON.parse(JSON.stringify(from.destinationObject))
+    var tempObj = from.destinationObject
     var templo = from.destination_name
     var tempcoord = from.destination_coord
 
@@ -79,7 +79,6 @@ function switch_locations(from, to) {
     to.clear()
     to.updateLocation(tempObj)
 }
-
 function parse_disruption_time(time) {
         var newtime = time;
         return new Date(newtime.slice(0,4),
@@ -87,7 +86,7 @@ function parse_disruption_time(time) {
                         newtime.slice(8,10),
                         newtime.slice(11,13),
                         newtime.slice(14,16),
-                        00, 00);
+                        0, 0);
 }
 
 function meter_to_kilometer(distance) {

@@ -48,7 +48,7 @@ Page {
     function setCoverData() {
         var route = Reittiopas.get_route_instance()
         appWindow.coverAlignment = Text.AlignLeft
-        appWindow.coverHeader = search_parameters.from_name
+        //appWindow.coverHeader = search_parameters.from_name
         appWindow.coverContents = ""
 
         for (var index in route.last_result) {
@@ -92,21 +92,22 @@ Page {
         id: footer
 
         ListItem {
-            height: 120
+            height: Theme.itemSizeExtraSmall
             visible: !busyIndicator.running
 
             onClicked: {
                 /* workaround to modify qml array is to make a copy of it,
                    modify the copy and assign the copy back to the original */
                 var new_parameters = search_parameters
-                new_parameters.time.setMinutes(new_parameters.time.getMinutes() + 15)
+                new_parameters.jstime.setMinutes(new_parameters.jstime.getMinutes() + 15)
+                new_parameters.time = Qt.formatTime(new_parameters.jstime.getMinutes(), "hhmm")
                 search_parameters = new_parameters
 
                 startSearch()
             }
 
             Label {
-                text: qsTr("Next") + " (" + Qt.formatDateTime(search_parameters.time,"hh:mm") + " +15 min)"
+                text: qsTr("Next") + " (" + search_parameters.jstime.toLocaleTimeString(Qt.locale(),"hh:mm") + " +15 min)"
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 anchors.verticalCenter: parent.verticalCenter
@@ -132,14 +133,6 @@ Page {
                 font.pixelSize: Theme.fontSizeExtraLarge
                 anchors.horizontalCenter: parent.horizontalCenter
             }
-//            Label {
-//                width: parent.width
-//                text: search_parameters.timetype == "departure" ?
-//                           qsTr("Departure") + " " + Qt.formatDateTime(search_parameters.time,"dd.MM hh:mm") :
-//                           qsTr("Arrival") + " " + Qt.formatDateTime(search_parameters.time,"dd.MM hh:mm")
-//                color: Theme.highlightColor
-//                horizontalAlignment: Text.AlignRight
-//            }
 
             ListItem {
                 height: Theme.itemSizeExtraSmall
@@ -149,14 +142,15 @@ Page {
                     /* workaround to modify qml array is to make a copy of it,
                        modify the copy and assign the copy back to the original */
                     var new_parameters = search_parameters
-                    new_parameters.time.setMinutes(new_parameters.time.getMinutes() - 15)
+                    new_parameters.jstime.setMinutes(new_parameters.jstime.getMinutes() - 15)
+                    new_parameters.time = Qt.formatTime(new_parameters.jstime.getMinutes(), "hhmm")
                     search_parameters = new_parameters
 
                     startSearch()
                 }
 
                 Label {
-                    text: qsTr("Previous") + " (" + Qt.formatDateTime(search_parameters.time,"hh:mm") +" -15 min)"
+                    text: qsTr("Previous") + " (" + search_parameters.jstime.toLocaleTimeString(Qt.locale(),"hh:mm") +" -15 min)"
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     anchors.verticalCenter: parent.verticalCenter
