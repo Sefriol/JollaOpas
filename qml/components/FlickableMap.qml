@@ -51,7 +51,6 @@ Map {
 
     Rectangle {
         anchors.fill: map
-        // TODO: bad color
         color: "black"
         opacity: mapTypeMenu.active ? 1.0 : 0.0
         Behavior on opacity {
@@ -60,16 +59,16 @@ Map {
     }
 
     plugin: Plugin {
-        name: "nokia"
+        name: "here"
 
         PluginParameter {
             name: "app_id"
-            value: "ETjZnV1eZZ5o0JmN320V"
+            value: "gtlul5uWS3Fsh1DWX3zA"
         }
 
         PluginParameter {
-            name: "token"
-            value: "QYpeZ4z7gwhQr7iW0hOTUQ%3D%3D"
+            name: "app_code"
+            value: "hPFZWq8ZmrIsm75KXngrMQ"
         }
     }
 
@@ -111,7 +110,6 @@ Map {
 
         sourceItem: Column {
             id: col
-            width: map_quickItem.width
             spacing: 16
 
             MapButton {
