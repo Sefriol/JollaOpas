@@ -101,9 +101,8 @@ Item {
                 GradientStop { position: 0.0; color: Qt.rgba (0, 0, 0, 0); }
                 GradientStop { position: 1.0; color: Theme.highlightDimmerColor; }
             }
-            anchors {
-                fill: backgroundClip;
-            }
+            anchors.fill: backgroundClip;
+
         }
         Item {
             id: backgroundItem
@@ -133,7 +132,7 @@ Item {
 
     Item {
         id: foregroundItem
-        clip: root.opened
+        clip: true
 
         anchors {
             fill: parent
