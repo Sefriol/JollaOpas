@@ -46,7 +46,7 @@ CoverBackground {
         },
         State {
             name: "active"
-            when: routeModel.count > 0
+            when: routeModel.count > 0 && coverView.currentIndex != -1
             PropertyChanges {target: routeDataColumn; visible: true }
             PropertyChanges {target: defaultCoverActions; enabled: false }
             PropertyChanges {target: routeCoverAction; enabled: true }
