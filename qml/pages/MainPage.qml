@@ -140,7 +140,7 @@ Page {
         parameters.from = fromCoord ? fromCoord : currentCoord
         parameters.to_name = toName
         parameters.to = toCoord
-        parameters.time = myTime
+        parameters.jstime = myTime
 
         parameters.timetype = timeTypeSwitch.departure ? "departure" : "arrival"
         parameters.walk_speed = walking_speed == "Unknown"?"70":walking_speed
@@ -434,7 +434,7 @@ Page {
                 }
                 DateSwitch {
                     id: dateSwitch
-                    dateToday: dateNow
+                    dateToday: typeof dateNow != "undefined" ? dateNow : true
                     onHandleSwitchesCheckedState: {
                         content_column.dateNow = dateSwitch.dateToday = dateNow
                         content_column.customDate = dateSwitch.customDate = customDate
@@ -466,17 +466,6 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: favorites_spacing.bottom
                 height: (favoriteRouteHeader.height + Theme.fontSizeSmall) * Theme.pixelRatio
-                Label {
-                    text: qsTr("Favourites")
-                    color: Theme.highlightColor
-                    anchors.bottom: parent.top
-                    anchors.bottomMargin: 5
-                    anchors.right: parent.right
-                    anchors.rightMargin: Theme.horizontalPageMargin
-                    font.pixelSize: Theme.fontSizeSmall
-                    truncationMode: TruncationMode.Fade
-                    horizontalAlignment: Text.AlignRight
-                }
             }
             ListModel {
                 id: favoriteRoutesModel
