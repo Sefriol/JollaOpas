@@ -39,7 +39,7 @@ import "../components"
 
 Dialog {
     id: favorites_page
-    canAccept: !query
+    canAccept: query
     property bool query: false
     property variant selectedObject
     property bool selectedItem: false
@@ -107,13 +107,18 @@ Dialog {
                 z:-1
                 color: Theme.primaryColor
             }
-            onClicked: {
-                rootItem.renameItem ? labelTextField.forceActiveFocus() : false
-                selectedObject = favoritesModel.get(index)
-                list.selectedItem ? list.selectedItem.highlighted = false : false
-                list.selectedItem = rootItem
-                rootItem.highlighted = true
-                favorites_page.accept()
+            onPressed: {
+                if(favorites_page.canAccept){
+                    rootItem.renameItem ? labelTextField.forceActiveFocus() : false
+                    selectedObject = favoritesModel.get(index)
+                    list.selectedItem ? list.selectedItem.highlighted = false : false
+                    list.selectedItem = rootItem
+                    rootItem.highlighted = true
+                    favorites_page.accept()
+                } else {
+                    rootItem.highlighted = true
+                    pressAndHold(favorites_page)
+                }
             }
             onPressAndHold: {
                 if (!list.contextMenu) {
