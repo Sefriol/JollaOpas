@@ -70,14 +70,19 @@ function first_station() {
 }
 
 function switch_locations(from, to) {
-    var tempObj = from.destinationObject
-    var templo = from.destination_name
-    var tempcoord = from.destination_coord
+    var newTo = from.destination
+    var newFrom = to.destination
+    if(newTo && newTo.coord) {
+        to.updateLocation(newTo)
+    } else {
+        to.clear()
+    }
+    if(newFrom && newFrom.coord) {
+        from.updateLocation(newFrom)
+    } else {
+        from.clear()
+    }
 
-    from.clear()
-    from.updateLocation(to.destinationObject)
-    to.clear()
-    to.updateLocation(tempObj)
 }
 function parse_disruption_time(time) {
         var newtime = time;
