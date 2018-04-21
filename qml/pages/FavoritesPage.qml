@@ -39,8 +39,10 @@ import "../components"
 
 Dialog {
     id: favorites_page
-    canAccept: query
     property bool query: false
+    canAccept: false
+    canNavigateForward: query
+    forwardNavigation: query
     property variant selectedObject
     property bool selectedItem: false
     Component.onCompleted: {
@@ -108,12 +110,13 @@ Dialog {
                 color: Theme.primaryColor
             }
             onPressed: {
-                if(favorites_page.canAccept){
+                if(query){
                     rootItem.renameItem ? labelTextField.forceActiveFocus() : false
                     selectedObject = favoritesModel.get(index)
                     list.selectedItem ? list.selectedItem.highlighted = false : false
                     list.selectedItem = rootItem
                     rootItem.highlighted = true
+                    favorites_page.canAccept = true
                     favorites_page.accept()
                 } else {
                     rootItem.highlighted = true
