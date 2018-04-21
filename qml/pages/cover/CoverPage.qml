@@ -45,11 +45,15 @@ CoverBackground {
         State {
             name: "empty"
             when: routeModel.count === 0
+            PropertyChanges {target: routeDataColumn; visible: false; enabled: false }
+            PropertyChanges {target: defaultCoverActions; enabled: true }
+            PropertyChanges {target: routeCoverAction; enabled: false }
+            PropertyChanges {target: differenceTimer; running: false }
         },
         State {
             name: "active"
             when: routeModel.count > 0 && coverView.currentIndex != -1
-            PropertyChanges {target: routeDataColumn; visible: true }
+            PropertyChanges {target: routeDataColumn; visible: true; enabled: true }
             PropertyChanges {target: defaultCoverActions; enabled: false }
             PropertyChanges {target: routeCoverAction; enabled: true }
             PropertyChanges {target: differenceTimer; running: true }
@@ -64,6 +68,7 @@ CoverBackground {
         anchors.leftMargin: 6
         spacing: 0
         visible: false
+        enabled: false
 
         Row {
             id: routeIndicator
