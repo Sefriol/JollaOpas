@@ -35,7 +35,7 @@ import QtQuick 2.1
 import QtLocation 5.0
 import QtPositioning 5.3
 import Sailfish.Silica 1.0
-import "../js/storage.js" as Storage
+import "../../js/storage.js" as Storage
 
 Map {
     id: map

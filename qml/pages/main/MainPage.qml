@@ -31,18 +31,15 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../js/UIConstants.js" as UIConstants
-import "../js/reittiopas.js" as Reittiopas
-import "../js/storage.js" as Storage
-import "../js/helper.js" as Helper
-import "../js/favorites.js" as Favorites
-import "../components"
+import "../../js/UIConstants.js" as UIConstants
+import "../../js/storage.js" as Storage
+import "../../js/helper.js" as Helper
+import "../../js/favorites.js" as Favorites
+import "../../components"
+import "../"
 
 Page {
     id: mainPage
-    /* Current location acquired with GPS */
-    property string currentCoord: ''
-    property string currentName: ''
 
     /* Values entered in "To" field */
     property string toCoord: ''
@@ -51,9 +48,10 @@ Page {
     /* Values entered in "From" field */
     property string fromCoord: ''
     property string fromName: ''
+
     property bool searchButtonDisabled: false
 
-    property bool endpointsValid: (toCoord.length > 0 && (fromCoord.length > 0 || currentCoord.length > 0))
+    property bool endpointsValid: (toCoord.length > 0 && fromCoord.length > 0)
 
     property date myTime
 
@@ -62,7 +60,7 @@ Page {
         if(state == "waiting_route" && endpointsValid) {
             var parameters = {}
             setRouteParameters(parameters)
-            pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+            pageStack.push(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
             state = "normal"
         }
     }
@@ -83,34 +81,6 @@ Page {
     function refreshFavoriteRoutes() {
             favoriteRoutesModel.clear()
             Favorites.getFavoriteRoutes('normal', appWindow.currentApi, favoriteRoutesModel)
-    }
-
-    function newRoute(name, coord) {
-        /* clear all other pages from the stack */
-        while(pageStack.depth > 1)
-            pageStack.pop(null, true)
-
-        /* bring application to front */
-        QmlApplicationViewer.showFullScreen()
-
-        /* Update time */
-        content_column.setTimeNow()
-
-        /* Update new destination to "to" */
-        to.updateLocation(name, 0, coord)
-
-        /* Remove user input location and use gps location */
-        from.clear()
-
-        /* use current location if available - otherwise wait for it */
-        if(currentCoord != "") {
-            var parameters = {}
-            setRouteParameters(parameters)
-            pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
-        }
-        else {
-            state = "waiting_route"
-        }
     }
 
     Component.onCompleted: {
@@ -136,8 +106,8 @@ Page {
         var change_margin = Storage.getSetting("change_margin")
         var currentDate = new Date()
 
-        parameters.from_name = fromName ? fromName : currentName
-        parameters.from = fromCoord ? fromCoord : currentCoord
+        parameters.from_name = fromName
+        parameters.from = fromCoord
         parameters.to_name = toName
         parameters.to = toCoord
         parameters.jstime = myTime
@@ -199,7 +169,7 @@ Page {
         anchors.centerIn: parent
         size: BusyIndicatorSize.Large
     }
-    CustomBottomDrawer {
+    ExpandingBottomDrawer {
         id: drawer
         anchors.fill: parent
         Component.onCompleted: startPoint = drawerheaderitem.y - ((Screen.height > 960) ? 0 : drawerheaderitem.height)
@@ -235,7 +205,7 @@ Page {
                     parameters.to_name = modelToName
                     parameters.to = modelToCoord
                     drawer.open = false
-                    pageStack.pushAttached(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                    pageStack.pushAttached(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
                     pageStack.navigateForward()
                 }
 
@@ -269,7 +239,7 @@ Page {
                         parameters.from = modelToCoord
                         parameters.to_name = modelFromName
                         parameters.to = modelFromCoord
-                        pageStack.pushAttached(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.pushAttached(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
                         pageStack.navigateForward()
                     }
                 }
@@ -333,15 +303,13 @@ Page {
 
             PullDownMenu {
                 enabled: !drawer.open
-                MenuItem { text: qsTr("Settings"); onClicked: { pageStack.push(Qt.resolvedUrl("SettingsPage.qml")) } }
-                MenuItem { text: qsTr("Exception info"); visible: appWindow.currentApi === "helsinki"; onClicked: pageStack.push(Qt.resolvedUrl("ExceptionsPage.qml")) }
+                MenuItem { text: qsTr("Settings"); onClicked: { pageStack.push(SettingsPage) } }
+                MenuItem { text: qsTr("Exception info"); visible: appWindow.currentApi === "helsinki"; onClicked: pageStack.push(Qt.resolvedUrl("../ExceptionsPage.qml")) }
                 MenuItem {
                     enabled: endpointsValid
                     text: qsTr("Add as favorite route");
                     onClicked: {
-                        var fromNameToAdd = fromName ? fromName : currentName
-                        var fromCoordToAdd = fromCoord ? fromCoord : currentCoord
-                        var res = Favorites.addFavoriteRoute('normal', appWindow.currentApi, fromCoordToAdd, fromNameToAdd, toCoord, toName, favoriteRoutesModel)
+                        var res = Favorites.addFavoriteRoute('normal', appWindow.currentApi, fromCoord, fromName, toCoord, toName, favoriteRoutesModel)
                         if (res === "OK") {
                             appWindow.useNotification( qsTr("Favorite route added") )
                         }
@@ -356,7 +324,7 @@ Page {
                     onClicked: {
                         var parameters = {}
                         setRouteParameters(parameters)
-                        pageStack.pushAttached(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.pushAttached(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
                         pageStack.navigateForward()
                     }
                 }
@@ -390,14 +358,9 @@ Page {
                     LocationEntry {
                         id: from
                         type: qsTr("From")
-                        isFrom: true
                         onLocationDone: {
                             fromName = name
                             fromCoord = coord
-                        }
-                        onCurrentLocationDone: {
-                            currentName = name
-                            currentCoord = coord
                         }
                         onLocationError: {
                             /* error in getting current position, cancel the wait */
@@ -452,7 +415,7 @@ Page {
                     onClicked: {
                         var parameters = {}
                         setRouteParameters(parameters)
-                        pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.push(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
                     }
                 }
             }

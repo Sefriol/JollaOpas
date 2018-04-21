@@ -31,7 +31,7 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../js/UIConstants.js" as UIConstants
+import "../../../js/UIConstants.js" as UIConstants
 
 Item {
     id: settings_item

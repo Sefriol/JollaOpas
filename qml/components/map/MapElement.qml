@@ -33,12 +33,12 @@ import QtQuick 2.1
 import QtLocation 5.0
 import QtPositioning 5.3
 import Sailfish.Silica 1.0
-import "../js/reittiopas.js" as Reittiopas
-import "../js/sirilive.js" as Sirilive
-import "../js/storage.js" as Storage
-import "../js/UIConstants.js" as UIConstants
-import "../js/helper.js" as Helper
-import "../js/theme.js" as Theme
+import "../../js/reittiopas.js" as Reittiopas
+import "../../js/sirilive.js" as Sirilive
+import "../../js/storage.js" as Storage
+import "../../js/UIConstants.js" as UIConstants
+import "../../js/helper.js" as Helper
+import "../../js/theme.js" as Theme
 
 Item {
     id: map_element

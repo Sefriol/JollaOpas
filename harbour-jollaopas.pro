@@ -1,7 +1,7 @@
 TARGET=harbour-jollaopas
 include(version.pri)
 include(common.pri)
-QT            += qml quick 
+QT            += qml quick
 CONFIG        += link_pkgconfig
 CONFIG        += sailfishapp
 PKGCONFIG     += qdeclarative5-boostable
@@ -14,7 +14,7 @@ OTHER_FILES += \
     qml/js/*.js \
     qml/pages/*.qml \
     qml/components/*.qml \
-    qml/pages/AboutDialog.qml.in \
+    qml/pages/dialogs/AboutDialog.qml.in \
     qml/main.qml \
     harbour-jollaopas.desktop \
     rpm/harbour-jollaopas.yaml \
@@ -39,7 +39,7 @@ lupdate_only{
 SOURCES += \
     qml/pages/*.qml \
     qml/components/*.qml \
-    qml/pages/AboutDialog.qml.in \
+    qml/pages/dialogs/AboutDialog.qml.in \
     qml/main.qml
 
 TRANSLATIONS += \
@@ -52,12 +52,12 @@ RESOURCES += \
 SOURCES += src/main.cpp
 
 INCLUDEPATH += \
-    src 
+    src
 
 
 include(version.pri)
 include(common.pri)
-configure($${PWD}/qml/pages/AboutDialog.qml.in)
+configure($${PWD}/qml/pages/dialogs/AboutDialog.qml.in)
 
 desktop.files = harbour-jollaopas.desktop
 

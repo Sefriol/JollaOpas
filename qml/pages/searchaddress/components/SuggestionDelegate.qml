@@ -31,7 +31,7 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../js/helper.js" as Helper
+import "../../../js/helper.js" as Helper
 
 ListItem {
     id: suggestionDelegate

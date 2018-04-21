@@ -31,10 +31,10 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../js/UIConstants.js" as UIConstants
-import "../js/storage.js" as Storage
-import "../js/theme.js" as Theme
-import "../components"
+import "../../js/UIConstants.js" as UIConstants
+import "../../js/storage.js" as Storage
+import "../../js/theme.js" as Theme
+import "../../components"
 
 Page {
     SilicaFlickable {
@@ -73,7 +73,7 @@ Page {
         }
 
         PullDownMenu {
-            MenuItem { text: qsTr("About"); onClicked: pageStack.push(Qt.resolvedUrl("AboutDialog.qml")) }
+            MenuItem { text: qsTr("About"); onClicked: pageStack.push(Qt.resolvedUrl("/dialogs/AboutDialog.qml")) }
             MenuItem { text: qsTr("Manage favorite places"); onClicked: pageStack.push(Qt.resolvedUrl("FavoritesPage.qml"))}
         }
 

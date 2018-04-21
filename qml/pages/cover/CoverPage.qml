@@ -299,7 +299,7 @@ CoverBackground {
                     parameters.mode_cost_2 = -1 // trams
             }
             appWindow.mainPage = pageStack.push(Qt.resolvedUrl("MainPage.qml"), {}, PageStackAction.Immediate)
-            pageStack.push(Qt.resolvedUrl("ResultPage.qml"), { search_parameters: parameters })
+            pageStack.push(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
         }
     }
 }

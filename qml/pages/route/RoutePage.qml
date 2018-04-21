@@ -31,8 +31,8 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../js/reittiopas.js" as Reittiopas
-import "../components"
+import "../../js/reittiopas.js" as Reittiopas
+import "../../components"
 
 Page {
     property int route_index
@@ -116,7 +116,7 @@ Page {
         id: delegate
         Loader {
             width: parent.width
-            source: type == "station" ?  "../components/RouteStationDelegate.qml" : "../components/RouteDelegate.qml"
+            source: type == "station" ?  "RouteStationDelegate.qml" : "RouteDelegate.qml"
         }
     }
 
@@ -182,7 +182,7 @@ Page {
             }
             MenuItem {
                 text: qsTr("Map")
-                onClicked: { pageStack.push(Qt.resolvedUrl("RouteMapPage.qml")) }
+                onClicked: { pageStack.push(Qt.resolvedUrl("../RouteMapPage.qml")) }
             }
         }
     }

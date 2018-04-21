@@ -54,11 +54,7 @@ Column {
         coordinate: QtPositioning.coordinate(0, 0)
     }
 
-    property string destination_name : ''
-    property string destination_coord : ''
-    property variant destinationObject
-
-    property bool isFrom : false
+    property variant destination: { 'coord': '', 'name': '' }
 
     property bool destination_valid : (suggestionModel.count > 0)
     property bool isFavorite : false
@@ -68,7 +64,6 @@ Column {
     width: parent.width
 
     signal locationDone(string name, string coord)
-    signal currentLocationDone(string name, string coord)
     signal locationError()
 
     Component.onCompleted: {
@@ -78,8 +73,8 @@ Column {
 
     function clear() {
         suggestionModel.source = ""
-        textfield.text = ''
-        destination_coord = ''
+        textfield.text = 'Select'
+        destination = undefined
         locationDone("","")
     }
 
@@ -96,9 +91,9 @@ Column {
         if(housenumber && address.slice(address.length - housenumber.length) != housenumber)
             address += " " + housenumber
 
-        destination_name = address
-        destination_coord = object.coord
-        destinationObject = object
+        destination = object
+        destination.fullname = address
+
         textfield.text = address
         isFavorite = Favorites.favoritExists(object.coord)
         locationDone(address, object.coord)
@@ -111,18 +106,18 @@ Column {
         if(object.housenumber && address.slice(address.length - object.housenumber.length) != object.housenumber)
             address += " " + object.housenumber
 
-        current_name = address
-        current_coord = object.coord
+        destination = object
+        destination.fullname = address
 
         textfield.text = address
         isFavorite = Favorites.favoritExists(object.coord)
-        currentLocationDone(address, object.coord)
+        locationDone(address, object.coord)
     }
 
     Timer {
         id: gpsTimer
-        running: isFrom
-        onTriggered: getCurrentCoord()
+        running: false
+        onTriggered: getReverseGeocode()
         triggeredOnStart: true
         interval: 200
         repeat: true
@@ -135,7 +130,7 @@ Column {
             return false
     }
 
-    function getCurrentCoord() {
+    function getReverseGeocode() {
         /* wait until position is accurate enough */
         if(positionValid(positionSource.position) && positionSource.position.horizontalAccuracy > 0 && positionSource.position.horizontalAccuracy < 100) {
             gpsTimer.stop()
@@ -156,10 +151,10 @@ Column {
         active: Qt.application.active
         onPositionChanged: {
             /* if we have moved >250 meters from the previous place, update current location */
-            if(previousCoord.coordinate.latitude != 0 &&
-                    previousCoord.coordinate.longitude != 0 &&
+            if(previousCoord.coordinate.latitude !== 0 &&
+                    previousCoord.coordinate.longitude !== 0 &&
                     position.coordinate.distanceTo(previousCoord) > 250) {
-                getCurrentCoord()
+                if(gpsLoading)getReverseGeocode();
             }
         }
     }
@@ -354,13 +349,13 @@ Column {
                 })
             }
             onPressAndHold: {
-                if(destination_coord) {
+                if(destination.coord) {
                     enabled: false
-                    if(Favorites.favoritExists(destination_coord)){
-                        Favorites.deleteFavorite(destination_coord, favoritesModel)
+                    if(Favorites.favoritExists(destination.coord)){
+                        Favorites.deleteFavorite(destination.coord, favoritesModel)
                         isFavorite = false
                         appWindow.useNotification( qsTr("Location removed from favorite places") )
-                    } else if(("OK" === Favorites.addFavorite(destination_name, destinationObject.coord, destinationObject.city, destinationObject.locationType))) {
+                    } else if(("OK" === Favorites.addFavorite(destination.fullname, destination.coord, destination.city, destination.locationType))) {
                         favoritesModel.clear()
                         Favorites.getFavorites(favoritesModel)
                         isFavorite = true
@@ -391,7 +386,10 @@ Column {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: parent.width/4
             onClicked: {
-                onClicked: { var mapDialog = pageStack.push(Qt.resolvedUrl("../pages/LocationMapPage.qml"), {inputCoord:destination_coord,resultName:destination_name})
+                onClicked: { var mapDialog = pageStack.push(Qt.resolvedUrl("../pages/LocationMapPage.qml"),
+                                                            {
+                                                                inputCoord:destination.coord ? destination.coord : '',
+                                                                resultName:destination.fullname ? destination.fullname : ''})
                     mapDialog.accepted.connect(function() {
                         updateLocation(mapDialog.resultObject)
                     })
