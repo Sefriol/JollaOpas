@@ -33,10 +33,10 @@ import QtQuick 2.1
 import Sailfish.Silica 1.0
 import QtPositioning 5.3
 import QtQuick.XmlListModel 2.0
-import "../js/UIConstants.js" as UIConstants
-import "../js/reittiopas.js" as Reittiopas
-import "../js/storage.js" as Storage
-import "../js/favorites.js" as Favorites
+import "../../../js/reittiopas.js" as Reittiopas
+import "../../../js/storage.js" as Storage
+import "../../../js/favorites.js" as Favorites
+import "../../../components"
 
 Column {
     property alias type : label.type
@@ -239,7 +239,7 @@ Column {
         width: parent.width
         height: textfield.height < (textfield.height/2 + textfield.height/1.5 +sourceLabel.height) ? (textfield.height/2 + textfield.height/1.5 +sourceLabel.height) : textfield.height
         onClicked: {
-            var searchdialog = pageStack.push(Qt.resolvedUrl("../pages/SearchAddressPage.qml"))
+            var searchdialog = pageStack.push(Qt.resolvedUrl("../../searchaddress/SearchAddressPage.qml"))
             pageStack.completeAnimation()
             searchdialog.searchType = "source"
             searchdialog.accepted.connect(function() {
@@ -342,7 +342,7 @@ Column {
             onClicked: {
                 favoritesModel.clear()
                 Favorites.getFavorites(favoritesModel)
-                var favoriteDialog = pageStack.push(Qt.resolvedUrl("../pages/FavoritesPage.qml"))
+                var favoriteDialog = pageStack.push(Qt.resolvedUrl("../../favorites/FavoritesPage.qml"))
                 favoriteDialog.query = true
                 favoriteDialog.accepted.connect(function() {
                     favoritesUpdateLocation(favoriteDialog.selectedObject)
@@ -386,7 +386,7 @@ Column {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: parent.width/4
             onClicked: {
-                onClicked: { var mapDialog = pageStack.push(Qt.resolvedUrl("../pages/LocationMapPage.qml"),
+                onClicked: { var mapDialog = pageStack.push(Qt.resolvedUrl("../../dialogs/MapDialog.qml"),
                                                             {
                                                                 inputCoord:destination.coord ? destination.coord : '',
                                                                 resultName:destination.fullname ? destination.fullname : ''})

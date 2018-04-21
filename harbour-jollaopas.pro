@@ -71,3 +71,5 @@ DISTFILES += \
 #    qml/components/CoverTime.qml \
 #    qml/components/CustomBottomDrawer.qml \
 #    qml/components/Clock.qml \
+    qml/components/qmldir \
+    qml/pages/qmldir

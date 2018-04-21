@@ -40,7 +40,7 @@ BackgroundItem {
     width: parent.width
 
     onClicked: {
-        pageStack.push(Qt.resolvedUrl("../pages/StopPage.qml"),{ leg_index: leg_number, leg_code: code })
+        pageStack.push(Qt.resolvedUrl("../../stop/StopPage.qml"),{ leg_index: leg_number, leg_code: code })
     }
 
     Label {

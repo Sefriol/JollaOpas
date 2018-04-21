@@ -39,7 +39,7 @@ import "components"
 ApplicationWindow {
     id: appWindow
 
-    cover: Qt.resolvedUrl("pages/CoverPage.qml")
+    cover: Qt.resolvedUrl("pages/cover/CoverPage.qml")
 
     Notification {
         id: notification
@@ -56,16 +56,16 @@ ApplicationWindow {
 
         var apiValue = Storage.getSetting("api")
         if (apiValue === "Unknown") {
-            var dialog = pageStack.push(Qt.resolvedUrl("pages/StartupDialog.qml"))
+            var dialog = pageStack.push(Qt.resolvedUrl("pages/dialogs/StartupDialog.qml"))
             dialog.onAccepted.connect(function() {
-                mainPage = pageStack.replace(Qt.resolvedUrl("pages/MainPage.qml"))
+                mainPage = pageStack.replace(Qt.resolvedUrl("pages/main/MainPage.qml"))
             })
             dialog.onRejected.connect(function() {
-                mainPage = pageStack.replace(Qt.resolvedUrl("pages/MainPage.qml"))
+                mainPage = pageStack.replace(Qt.resolvedUrl("pages/main/MainPage.qml"))
             })
         }
         else {
-            mainPage = pageStack.push(Qt.resolvedUrl("pages/MainPage.qml"))
+            mainPage = pageStack.push(Qt.resolvedUrl("pages/main/MainPage.qml"))
         }
     }
 

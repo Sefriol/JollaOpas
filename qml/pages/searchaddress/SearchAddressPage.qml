@@ -36,7 +36,9 @@ import "../../js/UIConstants.js" as UIConstants
 import "../../js/reittiopas.js" as Reittiopas
 import "../../js/storage.js" as Storage
 import "../../js/favorites.js" as Favorites
+import "./components"
 import "../../components"
+import "../"
 
 Dialog {
     id: search_page
@@ -105,7 +107,7 @@ Dialog {
             id: firstRow
             width: parent.width
             height: textfield.height
-            Searchfield {
+            SearchField {
                 id: textfield
                 anchors.left: parent.left
                 anchors.right: parent.right

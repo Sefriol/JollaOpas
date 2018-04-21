@@ -42,7 +42,7 @@ Component {
         highlighted: true
 
         onClicked: {
-            pageStack.pushAttached(Qt.resolvedUrl("../pages/RoutePage.qml"),
+            pageStack.pushAttached(Qt.resolvedUrl("../../route/RoutePage.qml"),
                                    {
                                        route_index: index,
                                        header: search_parameters.from_name + " - " + search_parameters.to_name,

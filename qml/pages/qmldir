@@ -1,0 +1,33 @@
+# cover
+CoverPage ./cover/CoverPage.qml
+
+# dialogs
+AboutDialog ./dialogs/AboutDialog.qml
+MapDialog ./dialogs/MapDialog.qml
+StartupDialog ./dialogs/StartupDialog.qml
+
+# exceptions
+ExceptionsPage ./exceptions/ExceptionsPage.qml
+
+# favorites
+FavoritesPage ./favorites/FavoritesPage.qml
+
+# main
+MainPage ./main/MainPage.qml
+
+# result
+ResultMapPage ./result/ResultMapPage.qml
+ResultPage ./result/ResultPage.qml
+
+# route
+RouteMapPage ./route/RouteMapPage.qml
+RoutePage ./route/RoutePage.qml
+
+# searchaddress
+SearchAddressPage ./searchaddress/SearchAddressPage.qml
+
+# settings
+SettingsPage ./settings/SettingsPage.qml
+
+# stop
+StopPage ./stop/StopPage.qml

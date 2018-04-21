@@ -31,18 +31,20 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../js/UIConstants.js" as UIConstants
-import "../js/storage.js" as Storage
-import "../js/favorites.js" as Favorites
-import "../js/helper.js" as Helper
-import "../components"
+import "../../js/UIConstants.js" as UIConstants
+import "../../js/storage.js" as Storage
+import "../../js/favorites.js" as Favorites
+import "../../js/helper.js" as Helper
+import "./components"
+import "../../components"
+import "../"
 
 CoverBackground {
     id: appCover
     states: [
         State {
             name: "empty"
-            when: routeModel.count == 0
+            when: routeModel.count === 0
         },
         State {
             name: "active"
@@ -253,7 +255,7 @@ CoverBackground {
         var coverRoutesItem = []
         var res = Favorites.getFavoriteRoutes('cover', Storage.getSetting("api"), coverRoutesItem)
         if (res == "Unknown") {
-            appWindow.mainPage = pageStack.push(Qt.resolvedUrl("MainPage.qml"))
+            appWindow.mainPage = pageStack.push(Qt.resolvedUrl("../main/MainPage.qml"))
             appWindow.useNotification( qsTr("Please save a route and add it to cover action by long-press.") )
         }
         else {
@@ -298,8 +300,8 @@ CoverBackground {
                 if(Storage.getSetting("tram_disabled") === "true")
                     parameters.mode_cost_2 = -1 // trams
             }
-            appWindow.mainPage = pageStack.push(Qt.resolvedUrl("MainPage.qml"), {}, PageStackAction.Immediate)
-            pageStack.push(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
+            appWindow.mainPage = pageStack.push(Qt.resolvedUrl("../main/MainPage.qml"), {}, PageStackAction.Immediate)
+            pageStack.push(Qt.resolvedUrl("../result/ResultPage.qml"), { search_parameters: parameters })
         }
     }
 }

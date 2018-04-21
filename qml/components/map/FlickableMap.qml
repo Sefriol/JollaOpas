@@ -120,7 +120,7 @@ Map {
                     mapTypeMenu.open()
                 }
 
-                MySelectionDialog {
+                MapTypeDialog {
                     id: mapTypeMenu
                     model: map.supportedMapTypes
                     delegate: MaptypesDelegate {

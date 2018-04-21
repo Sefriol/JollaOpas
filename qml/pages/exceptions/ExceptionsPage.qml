@@ -32,7 +32,8 @@
 import QtQuick 2.1
 import QtQuick.XmlListModel 2.0
 import Sailfish.Silica 1.0
-import "../components"
+import "./components"
+import "../../components"
 
 Page {
     Component.onCompleted: {

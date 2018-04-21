@@ -34,6 +34,7 @@ import QtPositioning 5.3
 import Sailfish.Silica 1.0
 import "../../js/UIConstants.js" as UIConstants
 import "../../js/reittiopas.js" as Reittiopas
+import "./components"
 import "../../components"
 
 Page {

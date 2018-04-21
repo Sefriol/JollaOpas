@@ -31,12 +31,10 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../js/UIConstants.js" as UIConstants
-import "../js/reittiopas.js" as Reittiopas
-import "../js/favorites.js" as Favorites
-import "../js/helper.js" as Helper
-import "../components"
-
+import "../../js/favorites.js" as Favorites
+import "./components"
+import "../../components"
+import "../"
 Dialog {
     id: favorites_page
     property bool query: false

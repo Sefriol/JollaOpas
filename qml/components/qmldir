@@ -1,0 +1,23 @@
+# datetime
+DateButton ./datetime/DateButton.qml
+DateSwitch ./datetime/DateSwitch.qml
+TimeButton ./datetime/TimeButton.qml
+TimeSwitch ./datetime/TimeSwitch.qml
+TimeTypeSwitch ./datetime/TimeTypeSwitch.qml
+
+# map
+FlickableMap ./map/FlickableMap.qml
+LocationCircle ./map/LocationCircle.qml
+MapButton ./map/MapButton.qml
+MapElement ./map/MapElement.qml
+MapTypeDialog ./map/MapTypeDialog.qml
+MaptypesDelegate ./map/MaptypesDelegate.qml
+
+# unsorted
+Clock ./Clock.qml
+ExpandingBottomDrawer ./ExpandingBottomDrawer.qml
+qmldir ./qmldir
+Separator ./Separator.qml
+SpaceSeparator ./SpaceSeparator.qml
+Spacing ./Spacing.qml
+StatusIndicatorCircle ./StatusIndicatorCircle.qml

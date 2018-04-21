@@ -35,8 +35,8 @@ import "../../js/UIConstants.js" as UIConstants
 import "../../js/storage.js" as Storage
 import "../../js/helper.js" as Helper
 import "../../js/favorites.js" as Favorites
+import "./components"
 import "../../components"
-import "../"
 
 Page {
     id: mainPage
@@ -205,7 +205,7 @@ Page {
                     parameters.to_name = modelToName
                     parameters.to = modelToCoord
                     drawer.open = false
-                    pageStack.pushAttached(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
+                    pageStack.pushAttached(Qt.resolvedUrl("../result/ResultPage.qml"), { search_parameters: parameters })
                     pageStack.navigateForward()
                 }
 
@@ -239,7 +239,7 @@ Page {
                         parameters.from = modelToCoord
                         parameters.to_name = modelFromName
                         parameters.to = modelFromCoord
-                        pageStack.pushAttached(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.pushAttached(Qt.resolvedUrl("../result/ResultPage.qml"), { search_parameters: parameters })
                         pageStack.navigateForward()
                     }
                 }
@@ -303,8 +303,8 @@ Page {
 
             PullDownMenu {
                 enabled: !drawer.open
-                MenuItem { text: qsTr("Settings"); onClicked: { pageStack.push(SettingsPage) } }
-                MenuItem { text: qsTr("Exception info"); visible: appWindow.currentApi === "helsinki"; onClicked: pageStack.push(Qt.resolvedUrl("../ExceptionsPage.qml")) }
+                MenuItem { text: qsTr("Settings"); onClicked: { pageStack.push("../settings/SettingsPage.qml") } }
+                MenuItem { text: qsTr("Exception info"); visible: appWindow.currentApi === "helsinki"; onClicked: pageStack.push(Qt.resolvedUrl("../exceptions/ExceptionsPage.qml")) }
                 MenuItem {
                     enabled: endpointsValid
                     text: qsTr("Add as favorite route");
@@ -324,7 +324,7 @@ Page {
                     onClicked: {
                         var parameters = {}
                         setRouteParameters(parameters)
-                        pageStack.pushAttached(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.pushAttached(Qt.resolvedUrl("../result/ResultPage.qml"), { search_parameters: parameters })
                         pageStack.navigateForward()
                     }
                 }
@@ -415,7 +415,7 @@ Page {
                     onClicked: {
                         var parameters = {}
                         setRouteParameters(parameters)
-                        pageStack.push(Qt.resolvedUrl("../ResultPage.qml"), { search_parameters: parameters })
+                        pageStack.push(Qt.resolvedUrl("../result/ResultPage.qml"), { search_parameters: parameters })
                     }
                 }
             }
