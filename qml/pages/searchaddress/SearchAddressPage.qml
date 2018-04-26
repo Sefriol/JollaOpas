@@ -32,13 +32,12 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
 import QtQuick.XmlListModel 2.0
-import "../../js/UIConstants.js" as UIConstants
-import "../../js/reittiopas.js" as Reittiopas
-import "../../js/storage.js" as Storage
-import "../../js/favorites.js" as Favorites
+import "qrc:/UIConstants.js" as UIConstants
+import "qrc:/reittiopas.js" as Reittiopas
+import "qrc:/storage.js" as Storage
+import "qrc:/favorites.js" as Favorites
 import "./components"
 import "../../components"
-import "../"
 
 Dialog {
     id: search_page

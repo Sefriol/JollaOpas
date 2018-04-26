@@ -31,9 +31,9 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../../../js/UIConstants.js" as UIConstants
-import "../../../js/reittiopas.js" as Reittiopas
-import "../../../js/helper.js" as Helper
+import "qrc:/UIConstants.js" as UIConstants
+import "qrc:/reittiopas.js" as Reittiopas
+import "qrc:/helper.js" as Helper
 
 // TODO:
 Component {

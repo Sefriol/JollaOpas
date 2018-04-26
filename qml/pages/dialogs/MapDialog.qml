@@ -33,8 +33,8 @@ import QtQuick 2.1
 import QtPositioning 5.3
 import QtQuick.XmlListModel 2.0
 import Sailfish.Silica 1.0
-import "../../js/reittiopas.js" as Reittiopas
-import "../../js/storage.js" as Storage
+import "qrc:/reittiopas.js" as Reittiopas
+import "qrc:/storage.js" as Storage
 import "../../components"
 
 Dialog {

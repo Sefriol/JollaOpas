@@ -31,10 +31,10 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../../js/UIConstants.js" as UIConstants
-import "../../js/storage.js" as Storage
-import "../../js/helper.js" as Helper
-import "../../js/favorites.js" as Favorites
+import "qrc:/UIConstants.js" as UIConstants
+import "qrc:/storage.js" as Storage
+import "qrc:/helper.js" as Helper
+import "qrc:/favorites.js" as Favorites
 import "./components"
 import "../../components"
 

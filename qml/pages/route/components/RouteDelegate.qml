@@ -31,8 +31,8 @@
 
 import QtQuick 2.1
 import Sailfish.Silica 1.0
-import "../../../js/reittiopas.js" as Reittiopas
-import "../../../js/colors.js" as Colors
+import "qrc:/reittiopas.js" as Reittiopas
+import "qrc:/colors.js" as Colors
 
 BackgroundItem {
     id: routeDelegate
