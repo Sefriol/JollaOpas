@@ -11,8 +11,14 @@ PKGCONFIG     += qdeclarative5-boostable
 QML_IMPORT_PATH = qml
 
 OTHER_FILES += \
+    qml/js/qmldir \
+    qml/pages/qmldir \
+    qml/pages/qmldir \
     qml/js/*.js \
     qml/pages/*.qml \
+    qml/pages/*/*/.qml \
+    qml/pages/*/*/*/.qml \
+    qml/components/*/*.qml \
     qml/components/*.qml \
     qml/pages/dialogs/AboutDialog.qml.in \
     qml/main.qml \
@@ -71,5 +77,8 @@ DISTFILES += \
 #    qml/components/CoverTime.qml \
 #    qml/components/CustomBottomDrawer.qml \
 #    qml/components/Clock.qml \
-    qml/components/qmldir \
-    qml/pages/qmldir
+#    qml/components/qmldir \
+#    qml/pages/qmldir \
+#    qml/js/qmldir \
+#    qml/pages/settings/components/TextIconSwitch.qml \
+#    qml/pages/TestPage.qml
