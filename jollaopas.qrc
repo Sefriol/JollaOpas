@@ -19,5 +19,15 @@
         <file>images/position.png</file>
         <file>images/station.png</file>
         <file>images/bearing_indicator.png</file>
+        <file alias="storage.js">qml/js/storage.js</file>
+        <file alias="colors.js">qml/js/colors.js</file>
+        <file alias="favorites.js">qml/js/favorites.js</file>
+        <file alias="helper.js">qml/js/helper.js</file>
+        <file alias="reittiopas.js">qml/js/reittiopas.js</file>
+        <file alias="sirilive.js">qml/js/sirilive.js</file>
+        <file alias="theme.js">qml/js/theme.js</file>
+        <file alias="translations.js">qml/js/translations.js</file>
+        <file alias="UIConstants.js">qml/js/UIConstants.js</file>
+        <file>src/main.cpp</file>
     </qresource>
 </RCC>

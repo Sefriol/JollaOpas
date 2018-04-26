@@ -37,7 +37,6 @@ import "qrc:/favorites.js" as Favorites
 import "qrc:/helper.js" as Helper
 import "./components"
 import "../../components"
-import "../"
 
 CoverBackground {
     id: appCover
@@ -57,8 +56,6 @@ CoverBackground {
             PropertyChanges {target: defaultCoverActions; enabled: false }
             PropertyChanges {target: routeCoverAction; enabled: true }
             PropertyChanges {target: differenceTimer; running: true }
-            PropertyChanges {target: lineImage; source: "qrc:/images/" + routeModel.get(coverView.currentIndex).type + ".png"}
-            PropertyChanges {target: lineNumber; text: routeModel.get(coverView.currentIndex).code? routeModel.get(coverView.currentIndex).code : routeModel.get(coverView.currentIndex).length + " km"}
         }
     ]
     Column {
@@ -146,7 +143,6 @@ CoverBackground {
                     clockTick()
                     updateLineImage(coverView.currentIndex)
                 }
-
                 anchors.left: parent.left
                 anchors.top: parent.top
 
@@ -157,8 +153,8 @@ CoverBackground {
                         width: parent.width
                         spacing: 10
                         CoverTime {
-                            schedTime: Helper.prettyTime(routeModel.get(index).time)
-                            realTime: appWindow.routeModel.get(index).time
+                            schedTime: Helper.prettyTime(time)
+                            realTime: time
                             realTimeAcc: "min"
                             font.pixelSize: Theme.fontSizeMedium
                             width: parent.width
@@ -167,7 +163,7 @@ CoverBackground {
                     }
                     Label {
                         id: stopName
-                        text: routeModel.get(index).name
+                        text: name
                         font.pixelSize: Theme.fontSizeSmall
                         width: parent.width
                         wrapMode: Text.WordWrap
@@ -251,9 +247,15 @@ CoverBackground {
     signal updateLineImage(int index)
     onUpdateLineImage: {
         var model = routeModel.get(index)
-        lineImage.source = "qrc:/images/" + model.type + ".png"
-        lineNumber.text = model.code ? model.code : model.length + " km"
+        if (model) {
+            lineImage.source = "qrc:/images/" + model.type + ".png"
+            lineNumber.text = model.code ? model.code : model.length + " km"
+        }
     }
+    function resetIndex(){
+        coverView.currentIndex = 0
+    }
+    //TODO: Remove or reuse these.
     function startCoverSearch(direction) {
         pageStack.clear()
         appWindow.activate()

@@ -34,12 +34,16 @@ import Sailfish.Silica 1.0
 import org.nemomobile.notifications 1.0
 import "js/storage.js" as Storage
 import "js/favorites.js" as Favorites
+import "pages/"
 import "components"
 
 ApplicationWindow {
     id: appWindow
 
-    cover: Qt.resolvedUrl("pages/cover/CoverPage.qml")
+    property alias coverPage: coverPage
+    cover:  CoverPage {
+        id: coverPage
+    }
 
     Notification {
         id: notification

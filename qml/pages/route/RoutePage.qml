@@ -106,6 +106,7 @@ Page {
                     }
                     model.append(object)
                 }
+                var cover = appWindow.coverPage.resetIndex()
                 appWindow.coverAlignment = Text.AlignLeft
                 appWindow.coverHeader = start_time.slice(11,16) + " - " + finish_time.slice(11,16)
                 appWindow.coverContents = routeDetails
