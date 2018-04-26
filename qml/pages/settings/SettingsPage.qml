@@ -85,9 +85,8 @@ Page {
             PageHeader {
                 title: qsTr("Settings")
             }
-
-            SectionHeader {
-                text: qsTr("Region")
+            SpaceSeparator {
+                type: qsTr("Region")
             }
 
             ComboBox {
@@ -119,140 +118,104 @@ Page {
                     }
                 }
             }
-
-            SectionHeader {
-                text: qsTr("Route search parameters")
+            Spacing {height: UIConstants.MARGIN_XLARGE}
+            SpaceSeparator {
+                type: qsTr("Route search parameters")
             }
-            TextSwitch {
+            TextIconSwitch {
                 id: busSwitch
                 visible: appWindow.currentApi === "helsinki"
-                function updateDescription() {
-                    if (busSwitch.checked)
-                        busSwitch.description = qsTr("Route results will contain Buses")
-                    else
-                        busSwitch.description = qsTr("Route results will not contain Buses")
-                }
-
+                source: "qrc:/images/bus.png"
+                description: qsTr("Route results will contain Buses")
+                fdescription: qsTr("Route results will not contain Buses")
                 function set_value(value) {
                     var val = !(value === "true")
                     busSwitch.checked = val
-                    busSwitch.updateDescription()
                 }
                 text: qsTr("Bus")
-                description: ""
                 onCheckedChanged: {
                     Storage.setSetting("bus_disabled", (!checked).toString())
-                    busSwitch.updateDescription()
                 }
             }
-            TextSwitch {
+            TextIconSwitch {
                 id: ulineSwitch
                 visible: appWindow.currentApi === "helsinki"
-                function updateDescription() {
-                    if (ulineSwitch.checked)
-                        ulineSwitch.description = qsTr("Route results will contain U lines")
-                    else
-                        ulineSwitch.description = qsTr("Route results will not contain U lines")
-                }
+                source: "qrc:/images/bus.png"
+                description: qsTr("Route results will contain U lines")
+                fdescription: qsTr("Route results will not contain U lines")
 
                 function set_value(value) {
                     var val = !(value === "true")
                     ulineSwitch.checked = val
-                    ulineSwitch.updateDescription()
                 }
                 text: qsTr("U line")
-                description: ""
                 onCheckedChanged: {
                     Storage.setSetting("uline_disabled", (!checked).toString())
-                    ulineSwitch.updateDescription()
                 }
             }
-            TextSwitch {
+            TextIconSwitch {
                 id: serviceSwitch
                 visible: appWindow.currentApi === "helsinki"
-                function updateDescription() {
-                    if (serviceSwitch.checked)
-                        serviceSwitch.description = qsTr("Route results will contain Service lines")
-                    else
-                        serviceSwitch.description = qsTr("Route results will not contain Service lines")
-                }
+                source: "qrc:/images/bus.png"
+                description: qsTr("Route results will contain Service lines")
+                fdescription: qsTr("Route results will not contain Service lines")
 
                 function set_value(value) {
                     var val = !(value === "true")
                     serviceSwitch.checked = val
-                    serviceSwitch.updateDescription()
                 }
                 text: qsTr("Service line")
-                description: ""
                 onCheckedChanged: {
                     Storage.setSetting("service_disabled", (!checked).toString())
-                    serviceSwitch.updateDescription()
                 }
             }
-            TextSwitch {
+            TextIconSwitch {
                 id: tramSwitch
                 visible: appWindow.currentApi === "helsinki"
-                function updateDescription() {
-                    if (tramSwitch.checked)
-                        tramSwitch.description = qsTr("Route results will contain Trams")
-                    else
-                        tramSwitch.description = qsTr("Route results will not contain Trams")
-                }
+                source: "qrc:/images/tram.png"
+                description:  qsTr("Route results will contain Trams")
+                fdescription: qsTr("Route results will not contain Trams")
+
 
                 function set_value(value) {
                     var val = !(value === "true")
                     tramSwitch.checked = val
-                    tramSwitch.updateDescription()
                 }
                 text: qsTr("Tram")
-                description: ""
                 onCheckedChanged: {
                     Storage.setSetting("tram_disabled", (!checked).toString())
-                    tramSwitch.updateDescription()
                 }
             }
-            TextSwitch {
+            TextIconSwitch {
                 id: metroSwitch
                 visible: appWindow.currentApi === "helsinki"
-                function updateDescription() {
-                    if (metroSwitch.checked)
-                        metroSwitch.description = qsTr("Route results will contain Metro")
-                    else
-                        metroSwitch.description = qsTr("Route results will not contain Metro")
-                }
+                source: "qrc:/images/metro.png"
+                description:  qsTr("Route results will contain Metro")
+                fdescription:  qsTr("Route results will not contain Metro")
 
                 function set_value(value) {
                     var val = !(value === "true")
                     metroSwitch.checked = val
-                    metroSwitch.updateDescription()
                 }
                 text: qsTr("Metro")
-                description: ""
                 onCheckedChanged: {
                     Storage.setSetting("metro_disabled", (!checked).toString())
-                    metroSwitch.updateDescription()
                 }
             }
-            TextSwitch {
+            TextIconSwitch {
                 id: trainSwitch
                 visible: appWindow.currentApi === "helsinki"
-                function updateDescription() {
-                    if (trainSwitch.checked)
-                        trainSwitch.description = qsTr("Route results will contain Trains")
-                    else
-                        trainSwitch.description = qsTr("Route results will not contain Trains")
-                }
+                source: "qrc:/images/train.png"
+                description:  qsTr("Route results will contain Trains")
+                fdescription:  qsTr("Route results will not contain Trains")
 
                 function set_value(value) {
                     var val = !(value === "true")
                     trainSwitch.checked = val
-                    trainSwitch.updateDescription()
                 }
                 text: qsTr("Train")
-                description: ""
                 onCheckedChanged: {
                     Storage.setSetting("train_disabled", (!checked).toString())
-                    trainSwitch.updateDescription()
                 }
             }
 
@@ -332,9 +295,10 @@ Page {
                     }
                 }
             }
-
-            SectionHeader {
-                text: qsTr("Map")
+            Spacing {height: UIConstants.MARGIN_XLARGE}
+            SpaceSeparator {
+                anchors.topMargin: Theme.fontSizeLsmall
+                type: qsTr("Map")
             }
             Slider {
                 id: defaultZoomLevel
@@ -356,9 +320,10 @@ Page {
                     defaultZoomLevel.updateLabel()
                 }
             }
-
-            SectionHeader {
-                text: qsTr("UI tweaks")
+            Spacing {height: UIConstants.MARGIN_XLARGE}
+            SpaceSeparator {
+                anchors.topMargin: Theme.fontSizeSmall
+                type: qsTr("UI tweaks")
             }
             TextSwitch {
                 id: searchButtonSwitch
