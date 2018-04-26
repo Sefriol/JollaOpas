@@ -49,27 +49,71 @@ Column {
             anchors.horizontalCenter: parent.horizontalCenter
             font.pixelSize: Theme.fontSizeTiny
             x: Theme.horizontalPageMargin
+            Behavior on color {
+                ColorAnimation {
+                    duration: 100
+                    easing.type: Easing.InOutQuad
+                }
+            }
         }
         Label {
             id: arrivalLabel
             text: qsTr("Arrival")
-            width: parent.width/2
             color: !departure ? Theme.highlightColor : Theme.secondaryHighlightColor
             anchors.verticalCenter: parent.verticalCenter
-            anchors.right: parent.horizontalCenter
+            anchors.right: lsign.left
             anchors.rightMargin: 5
             horizontalAlignment: Text.AlignRight
+            Behavior on color {
+                ColorAnimation {
+                    duration: 100
+                    easing.type: Easing.InOutQuad
+                }
+            }
         }
-
+        Label {
+            id: lsign
+            text: "\u25C3"
+            color: !departure ? Theme.highlightColor : Theme.secondaryHighlightColor
+            anchors.right: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            horizontalAlignment: Text.AlignLeft
+            Behavior on color {
+                ColorAnimation {
+                    duration: 100
+                    easing.type: Easing.InOutQuad
+                }
+            }
+        }
+        Label {
+            id: rsign
+            text:  "\u25B9"
+            color: departure ? Theme.highlightColor : Theme.secondaryHighlightColor
+            anchors.left: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            horizontalAlignment: Text.AlignLeft
+            Behavior on color {
+                ColorAnimation {
+                    duration: 100
+                    easing.type: Easing.InOutQuad
+                }
+            }
+        }
         Label {
             id: departureLabel
             text: qsTr("Departure")
-            width: parent.width/2
             color: departure ? Theme.highlightColor : Theme.secondaryHighlightColor
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.horizontalCenter
+            anchors.left: rsign.right
             anchors.leftMargin: 5
             horizontalAlignment: Text.AlignLeft
+            Behavior on color {
+                ColorAnimation {
+                    duration: 100
+                    easing.type: Easing.InOutQuad
+                }
+            }
         }
+
     }
 }
