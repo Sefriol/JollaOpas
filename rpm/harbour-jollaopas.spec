@@ -6,6 +6,9 @@
 Name:       harbour-jollaopas
 
 # >> macros
+%define __provides_exclude_from ^%{_datadir}/.*$
+#
+%define __requires_exclude ^libqtmqtt.*$
 # << macros
 
 %{!?qtc_qmake:%define qtc_qmake %qmake}

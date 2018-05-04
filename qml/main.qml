@@ -32,6 +32,7 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
 import org.nemomobile.notifications 1.0
+import MqttClient 1.0
 import "js/storage.js" as Storage
 import "js/favorites.js" as Favorites
 import "pages/"
@@ -69,7 +70,7 @@ ApplicationWindow {
             })
         }
         else {
-            mainPage = pageStack.push(Qt.resolvedUrl("pages/main/MainPage.qml"))
+            mainPage = pageStack.push(Qt.resolvedUrl("pages/dialogs/MqttDialog.qml"))
         }
     }
 
