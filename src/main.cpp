@@ -31,6 +31,7 @@
 
 #include <QtQuick>
 #include "qmlmqttclient.h"
+#include "qmlmqttsubscription.h"
 #include <sailfishapp.h>
 
 int main(int argc, char *argv[])

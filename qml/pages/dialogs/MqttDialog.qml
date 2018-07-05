@@ -20,13 +20,13 @@ Dialog {
     function addMessage(payload)
     {
         messageModel.insert(0, {"payload" : payload})
-
         if (messageModel.count >= 100)
             messageModel.remove(99)
     }
 
     Column {
-        anchors.fill: parent
+        height: parent.height/1.5
+        id: form
         Row {
             Label {
                 text: "Hostname:"
@@ -50,7 +50,7 @@ Dialog {
 
             TextField {
                 id: portField
-                text: "1883"
+                text: "443"
                 placeholderText: "<Port>"
                 inputMethodHints: Qt.ImhDigitsOnly
                 enabled: !client.connected
@@ -94,33 +94,37 @@ Dialog {
                 }
             }
         }
-        SilicaListView {
-            id: messageView
-            model: messageModel
-            delegate: ListItem {
-                id: delegateItem
-                width: ListView.view.width
-                contentHeight: Theme.itemSizeMedium
-
-                Label {
-                    id: locName
-                    color: Theme.primaryColor
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.leftMargin: Theme.paddingMedium
-                    anchors.rightMargin: Theme.paddingMedium
-                    text: payload
-                    font.pixelSize: Theme.fontSizeSmall
-                    wrapMode: Text.Wrap
-                }
-            }
-        }
-
         Label {
             color: (client.connected ? Theme.highlightColor : Theme.secondaryHighlightColor)
             text: "Status: " + (client.connected ? "connected" : "disconnected")
             enabled: client.connected
+        }
+    }
+    SilicaListView {
+        id: messageView
+        model: messageModel
+        anchors.top:form.bottom
+        Rectangle {
+            color: "black"
+            anchors.fill: parent;
+        }
+        delegate: ListItem {
+            id: delegateItem
+            width: ListView.view.width
+            contentHeight: Theme.itemSizeMedium
+
+            Label {
+                id: locName
+                color: Theme.primaryColor
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.leftMargin: Theme.paddingMedium
+                anchors.rightMargin: Theme.paddingMedium
+                text: payload
+                font.pixelSize: Theme.fontSizeSmall
+                wrapMode: Text.Wrap
+            }
         }
     }
 }

@@ -129,10 +129,10 @@ LiveResult.prototype.parse_json = function(vehicles, parent) {
     if (typeof parent.model.clear === "function") {
         parent.model.clear()
     }
-    for (var monitoredVehicle in vehicles.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity) {
-        var vehicleData = vehicles.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[monitoredVehicle]
-        var code = vehicleData.MonitoredVehicleJourney.LineRef.value
-        var color = vehicleData.MonitoredVehicleJourney.DirectionRef.value === "1" ? "#08a7cc" : "#cc2d08"
+    for (var monitoredVehicle in vehicles) {
+        var vehicleData = vehicles[monitoredVehicle].VP
+        var code = vehicleData.line
+        var color = vehicleData.dir === "1" ? "#08a7cc" : "#cc2d08"
         var vehicleTypeAndCode = {};
         if (parent.api_type !== 'helsinki') {
             // No JORE codes in use outside of Helsinki
@@ -140,17 +140,17 @@ LiveResult.prototype.parse_json = function(vehicles, parent) {
         }
         else {
             // Jore parsing applied from example linked in: http://dev.hsl.fi/
-            if (code.match("^1019")) {code = "Ferry"; color = "#0080c8"; vehicleTypeAndCode = {"type": "ferry", "code": "Ferry"} /*Ferry*/}
-            else if (code.match(/^1300/)) {code = code.substring(4,5); color = "#ee5400"; vehicleTypeAndCode = {"type": "metro", "code": code}; /*Metro*/}
-            else if (code.match(/^300/)) {code = code.substring(4,5); color = "#61b700"; vehicleTypeAndCode = {"type": "train", "code": code} /*Train*/}
-            else if (code.match(/^10(0|10)/)) {code = code.substring(2,5).trim().replace(/^[0]?/,""); color = "#925bc6"; vehicleTypeAndCode = {"type": "tram", "code": code} /*Tram*/}
-            else if (code.match(/^(1|2|4).../)) {code = code.substring(1).replace(/^[0]?/,""); vehicleTypeAndCode = {"type": "bus", "code": code} /*Use default color for bus*/}
+            if (monitoredVehicle.includes('ferry')) {code = "Ferry"; color = "#0080c8"; vehicleTypeAndCode = {"type": "ferry", "code": "Ferry"} /*Ferry*/}
+            else if (monitoredVehicle.includes("metro")) {code = code.substring(4,5); color = "#ee5400"; vehicleTypeAndCode = {"type": "metro", "code": code}; /*Metro*/}
+            else if (monitoredVehicle.includes("train")) {code = code.substring(4,5); color = "#61b700"; vehicleTypeAndCode = {"type": "train", "code": code} /*Train*/}
+            else if (monitoredVehicle.includes("tram")) {code = code.substring(2,5).trim().replace(/^[0]?/,""); color = "#925bc6"; vehicleTypeAndCode = {"type": "tram", "code": code} /*Tram*/}
+            else if (monitoredVehicle.includes("bus")) {code = code.substring(1).replace(/^[0]?/,""); vehicleTypeAndCode = {"type": "bus", "code": code} /*Use default color for bus*/}
             else {vehicleTypeAndCode = {"type": "bus", "code": code}; /*console.debug("Unknown vehicle found.") Unknown vehicle, expect bus, use default color */ }
         }
         // Show only vehicles included in the route
         var allowedVehicles = parent.model.vehicleCodesToShowOnMap
         if (showVehicle(vehicleTypeAndCode, allowedVehicles)) {
-            parent.model.append({"modelLongitude" : vehicleData.MonitoredVehicleJourney.VehicleLocation.Longitude, "modelLatitude" : vehicleData.MonitoredVehicleJourney.VehicleLocation.Latitude, "modelCode" : code, "modelColor" : color, "modelBearing" : vehicleData.MonitoredVehicleJourney.Bearing})
+            parent.model.append({"modelLongitude" : vehicleData.long, "modelLatitude" : vehicleData.lat, "modelCode" : code, "modelColor" : color, "modelBearing" : vehicleData.MonitoredVehicleJourney.Bearing})
         }
     }
 }

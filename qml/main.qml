@@ -70,7 +70,7 @@ ApplicationWindow {
             })
         }
         else {
-            mainPage = pageStack.push(Qt.resolvedUrl("pages/dialogs/MqttDialog.qml"))
+            mainPage = pageStack.push(Qt.resolvedUrl("pages/main/MainPage.qml"))
         }
     }
 
