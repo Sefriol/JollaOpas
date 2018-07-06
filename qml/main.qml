@@ -92,6 +92,11 @@ ApplicationWindow {
     property int coverAlignment: Text.AlignHCenter
     property string currentApi: ''
     property variant mainPage
+    property ListModel itinerariesModel: itinerariesModel
+    property string itinerariesJson: ""
+    property int itinerariesIndex: -1
+    property string fromName: ""
+    property string toName: ""
     function useNotification(text){
         notification.close()
         notification.previewSummary = text
@@ -104,5 +109,10 @@ ApplicationWindow {
 
     Label {
         id: banner
+    }
+
+    ListModel {
+        id: itinerariesModel
+        property bool done: false
     }
 }

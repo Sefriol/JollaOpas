@@ -40,8 +40,8 @@ import "../../components"
 Dialog {
     id: mapDialog
     backNavigation: false
-    canNavigateForward: false
-    forwardNavigation: false
+    canNavigateForward: true
+    forwardNavigation: true
     property string inputCoord
     property variant resultObject
     property string resultName
@@ -69,27 +69,19 @@ Dialog {
             ColorAnimation { duration: 100 }
         }
     ]
-
-    XmlListModel {
+    ListModel {
         id: suggestionModel
-        query: "/response/node"
-        XmlRole { name: "name"; query: "name/string()" }
-        XmlRole { name: "city"; query: "city/string()" }
-        XmlRole { name: "coord"; query: "coords/string()" }
-        XmlRole { name: "shortCode"; query: "shortCode/string()" }
-        XmlRole { name: "housenumber"; query: "details/houseNumber/string()" }
-        XmlRole { name: "locationType"; query: "locType/string()" }
-        onStatusChanged: {
-            if(status == XmlListModel.Ready && source != "") {
+        property bool done: true
+
+        onDoneChanged: {
+            if (done) {
                 /* if only result, take it into use */
                 if(suggestionModel.count >= 1) {
                     mapDialog.resultObject = suggestionModel.get(0)
-                    mapDialog.resultName = textfield.text = suggestionModel.get(0).name.split(',', 1).toString()
+                    mapDialog.resultName = textfield.text = suggestionModel.get(0).name
                 } else if (suggestionModel.count == 0) {
                     appWindow.useNotification( qsTr("Could not find the location") )
                 }
-            } else if (status == XmlListModel.Error) {
-                appWindow.useNotification( qsTr("Could not find the location") )
             }
         }
     }
@@ -119,9 +111,9 @@ Dialog {
         }
         onSelectedCoordChanged: {
             if(selectedCoord !== QtPositioning.coordinate())
-                suggestionModel.source = Reittiopas.get_reverse_geocode(selectedCoord.latitude,
-                                                                        selectedCoord.longitude,
-                                                                        Storage.getSetting('api'))
+                Reittiopas.get_reverse_geocode(selectedCoord.latitude, selectedCoord.longitude,
+                                               suggestionModel,
+                                               Storage.getSetting('api'))
         }
     }
 
@@ -157,15 +149,12 @@ Dialog {
             }
             BusyIndicator {
                 id: busyIndicator
-                running: suggestionModel.status === XmlListModel.Loading
+                running: !suggestionModel.done
                 anchors.centerIn: statusIndicator
                 size: BusyIndicatorSize.Small
                 MouseArea {
                     id: spinnerMouseArea
                     anchors.fill: parent
-                    onClicked: {
-                        suggestionModel.source = ""
-                    }
                 }
             }
         }

@@ -46,10 +46,39 @@ Page {
     property string finish_time
     property string routeDetails: ""
     Component.onCompleted: {
-        var route = Reittiopas.get_route_instance()
-        route.dump_legs(route_index, routeModel)
-        from_name = route.from_name
-        to_name = route.to_name
+        dumpLegs(route_index, routeModel)
+    }
+
+    function dumpLegs(index, model) {
+        // save used route index for dumping stops
+        appWindow.itinerariesIndex = index
+        var countOfLegs = appWindow.itinerariesModel.get(route_index).legs.count
+        for (var legindex = 0; legindex < countOfLegs; ++legindex) {
+            var legdata = appWindow.itinerariesModel.get(route_index).legs.get(legindex)
+            var station = {}
+            station.type = "station"
+            station.name = legdata.from.name ? legdata.from.name : ''
+            station.time = legdata.from.time
+            station.code = ""
+            if (legindex === 0) {
+                station.name = appWindow.fromName
+            }
+            else {
+                station.shortCode = legdata.from.shortCode
+            }
+            station.length = legdata.distance
+            station.duration = 0
+            station.leg_number = ""
+            model.append(station)
+            model.append(legdata)
+        }
+        var last_station = {"type" : "station",
+                            "name" : appWindow.toName,
+                            "time" : appWindow.itinerariesModel.get(route_index).legs.get(countOfLegs  - 1).to.time,
+                            "leg_number" : ""}
+
+        model.append(last_station)
+        model.done = true
     }
 
     ListModel {
@@ -184,7 +213,7 @@ Page {
             }
             MenuItem {
                 text: qsTr("Map")
-                onClicked: { pageStack.push(Qt.resolvedUrl("../RouteMapPage.qml")) }
+                onClicked: { pageStack.push(Qt.resolvedUrl("RouteMapPage.qml")) }
             }
         }
     }

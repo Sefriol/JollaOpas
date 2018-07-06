@@ -41,6 +41,7 @@ import "../../components"
 
 Dialog {
     id: search_page
+    property variant model
     property string emptystr
     property alias selectName : statusIndicator.validateState
     property alias validDestination : statusIndicator.sufficientState
@@ -55,27 +56,21 @@ Dialog {
         triggeredOnStart: false
         onTriggered: {
             if(textfield.acceptableInput) {
-                suggestionModel.source = Reittiopas.get_geocode(textfield.text, Storage.getSetting('api'))
+                Reittiopas.get_geocode(textfield.text, suggestionModel, Storage.getSetting('api'))
             }
         }
     }
-    XmlListModel {
+    ListModel {
         id: suggestionModel
-        query: "/response/node"
-        XmlRole { name: "name"; query: "name/string()" }
-        XmlRole { name: "city"; query: "city/string()" }
-        XmlRole { name: "coord"; query: "coords/string()" }
-        XmlRole { name: "shortCode"; query: "shortCode/string()" }
-        XmlRole { name: "housenumber"; query: "details/houseNumber/string()" }
-        XmlRole { name: "locationType"; query: "locType/string()" }
+        property bool done: true
 
-        onStatusChanged: {
-            statusIndicatorState = suggestionModel.status === XmlListModel.Loading
-            if(status == XmlListModel.Ready && source != "") {
+        onDoneChanged: {
+            statusIndicatorState = suggestionModel.done
+            if (done) {
                 /* if only result, take it into use */
                 validDestination = (suggestionModel.count > 0)
                 if(suggestionModel.count == 1) {
-                    selectName = suggestionModel.get(0).name.split(',', 1).toString()
+                    selectName = suggestionModel.get(0).label
                     selectObject = suggestionModel.get(0)
                     search_page.accept()
                 } else if (suggestionModel.count == 0) {
@@ -86,12 +81,12 @@ Dialog {
                     selectName = emptystr
                     selectObject = null
                 }
-            } else if (status == XmlListModel.Error) {
-                suggestionModel.source = ""
+            } else {
                 appWindow.useNotification( qsTr("Could not find location") )
             }
         }
     }
+
     Column {
         width: parent.width
         anchors.left: parent.left
@@ -114,7 +109,6 @@ Dialog {
                 focus: true
                 onTextChanged: {
                     if(text != selectName) {
-                        suggestionModel.source = emptystr
                         selectName = emptystr
                         selectObject = null
                         if(acceptableInput)

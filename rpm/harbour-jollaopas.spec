@@ -13,7 +13,7 @@ Name:       harbour-jollaopas
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Journey planner for Helsinki and Tampere area
-Version:    0.6.4
+Version:    0.8.0
 Release:    1
 Group:      Qt/Qt
 License:    GPLv3

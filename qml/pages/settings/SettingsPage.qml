@@ -141,14 +141,14 @@ Page {
                 id: ulineSwitch
                 visible: appWindow.currentApi === "helsinki"
                 source: "qrc:/images/bus.png"
-                description: qsTr("Route results will contain U lines")
-                fdescription: qsTr("Route results will not contain U lines")
+                description: qsTr("Route results will contain ferry")
+                fdescription: qsTr("Route results will not contain ferry")
 
                 function set_value(value) {
                     var val = !(value === "true")
                     ulineSwitch.checked = val
                 }
-                text: qsTr("U line")
+                text: qsTr("Ferry")
                 onCheckedChanged: {
                     Storage.setSetting("uline_disabled", (!checked).toString())
                 }

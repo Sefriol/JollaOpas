@@ -52,13 +52,21 @@ Page {
     }
 
     Component.onCompleted: {
-        var route = Reittiopas.get_route_instance()
-        route.dump_stops(leg_index, stopModel)
+        dumpStops(leg_index, stopModel)
 
         if(appWindow.mapVisible)
             map_loader.sourceComponent = map_component
     }
 
+    function dumpStops(index, model) {
+        var legdata = appWindow.itinerariesModel.get(appWindow.itinerariesIndex).legs.get(index)
+        var countOfLocations = legdata.locs.count;
+        for (var locindex = 0; locindex < countOfLocations; ++locindex) {
+            var locdata =  legdata.locs.get(locindex)
+            model.append(locdata)
+    }
+    model.done = true
+}
 /*
 // TODO:
     ToolBarLayout {

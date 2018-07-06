@@ -42,49 +42,43 @@ Page {
     Component.onCompleted: startSearch()
 
     function startSearch() {
-        routeModel.clear()
-        Reittiopas.new_route_instance(search_parameters, routeModel, Storage.getSetting('api'))
+        appWindow.itinerariesModel.clear()
+        Reittiopas.get_route(search_parameters, appWindow.itinerariesModel,
+                             appWindow.itinerariesJson, Storage.getSetting('api'));
     }
 
     function setCoverData() {
         var route = Reittiopas.get_route_instance()
         appWindow.coverAlignment = Text.AlignLeft
-        //appWindow.coverHeader = search_parameters.from_name
+        appWindow.coverHeader = search_parameters.from_name
         appWindow.coverContents = ""
 
-        for (var index in route.last_result) {
-            // Add leading zeros if needed
-            var startHours = ('0' + route.last_result[index].start.getHours()).slice(-2)
-            var startMinutes = ('0' + route.last_result[index].start.getMinutes()).slice(-2)
-            var finishHours = ('0' + route.last_result[index].finish.getHours()).slice(-2)
-            var finishMinutes = ('0' + route.last_result[index].finish.getMinutes()).slice(-2)
+        for (var index = 0; index < appWindow.itinerariesModel.count; ++index) {
+            var startTime = Qt.formatTime(appWindow.itinerariesModel.get(index).start, "hh:mm")
+            var finishTime = Qt.formatTime(appWindow.itinerariesModel.get(index).finish, "hh:mm")
             var code = ""
-
-            if (route.last_result[index].legs.length > 0 && route.last_result[index].legs[0].type !== "walk" ) {
-                code = " | L: " + route.last_result[index].legs[0].code;
+            if (appWindow.itinerariesModel.get(index).legs.get(0) && appWindow.itinerariesModel.get(index).legs.get(0).type !== "walk" ) {
+                code = " | L: " + appWindow.itinerariesModel.get(index).legs.get(0).code;
             }
-            else if (route.last_result[index].legs.length > 1 && route.last_result[index].legs[1].type !== "walk" ) {
-                code = " | L: " + route.last_result[index].legs[1].code;
+            else if (appWindow.itinerariesModel.get(index).legs.get(1) && appWindow.itinerariesModel.get(index).legs.get(1).type !== "walk" ) {
+                code = " | L: " + appWindow.itinerariesModel.get(index).legs.get(1).code;
             }
-
-            appWindow.coverContents += startHours + ":" + startMinutes + "-" + finishHours + ":" + finishMinutes
-                    + code + "\n";
+            appWindow.coverContents += startTime + "-" + finishTime + code + "\n";
         }
     }
 
-    ListModel {
-        id: routeModel
-        property bool done : false
+    Connections {
+        target: appWindow.itinerariesModel
         // Update cover when performing the search for the first time
         onDoneChanged: {
-            if (done) {
+            if (appWindow.itinerariesModel.done) {
                 setCoverData()
             }
         }
     }
     // Update cover when coming back to ResultPage from RoutePage
     onStatusChanged: {
-        if (status == PageStatus.Activating && routeModel.done) {
+        if (status == PageStatus.Activating && appWindow.itinerariesModel.done) {
             setCoverData()
         }
     }
@@ -121,7 +115,7 @@ Page {
     SilicaListView {
         id: list
         anchors.fill: parent
-        model: routeModel
+        model: appWindow.itinerariesModel
         footer: footer
         delegate: ResultDelegate {}
         spacing: 10 * Theme.pixelRatio
@@ -184,7 +178,7 @@ Page {
 
         ViewPlaceholder {
             anchors.centerIn: parent
-            visible: (!busyIndicator.running && routeModel.count == 0)
+            visible: (!busyIndicator.running && appWindow.itinerariesModel.count == 0)
             text: qsTr("No results")
         }
 
@@ -198,7 +192,7 @@ Page {
 
     BusyIndicator {
         id: busyIndicator
-        running: !routeModel.done
+        running: !appWindow.itinerariesModel.done
         size: BusyIndicatorSize.Large
         anchors.centerIn: parent
     }

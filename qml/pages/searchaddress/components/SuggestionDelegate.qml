@@ -45,11 +45,11 @@ ListItem {
         anchors.left: parent.left
         anchors.leftMargin: Theme.horizontalPageMargin
         anchors.right: locType.left
-        text: name + " " + housenumber
+        text: name
         font.pixelSize: Theme.fontSizeMedium
     }
     Label {
-        text: Helper.capitalize_string(locationType)
+        text: Helper.capitalize_string(suggestionModel.get(index).layer)
         anchors.bottom: parent.bottom
         font.italic: true
         font.pixelSize: Theme.fontSizeExtraSmall
@@ -66,7 +66,7 @@ ListItem {
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
         anchors.rightMargin: Theme.horizontalPageMargin
-        text: city
+        text: localadmin
         font.pixelSize: Theme.fontSizeSmall
     }
 }

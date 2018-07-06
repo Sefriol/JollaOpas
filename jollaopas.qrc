@@ -2,8 +2,8 @@
     <qresource prefix="/">
         <file>images/boat.png</file>
         <file>images/bus.png</file>
-        <file>images/metro.png</file>
-        <file>images/train.png</file>
+        <file>images/subway.png</file>
+        <file>images/rail.png</file>
         <file>images/tram.png</file>
         <file>images/walk.png</file>
         <file>images/home-mark.png</file>

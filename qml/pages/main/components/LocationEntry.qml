@@ -32,7 +32,6 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
 import QtPositioning 5.3
-import QtQuick.XmlListModel 2.0
 import "qrc:/reittiopas.js" as Reittiopas
 import "qrc:/storage.js" as Storage
 import "qrc:/favorites.js" as Favorites
@@ -45,7 +44,6 @@ Column {
     property alias current_name : statusIndicator.validateState
     property string current_coord : ''
 
-    property alias positionFound: statusIndicator.busyState
     property alias gpsLoading: statusIndicator.sufficientState
 
     Location {
@@ -54,7 +52,7 @@ Column {
         coordinate: QtPositioning.coordinate(0, 0)
     }
 
-    property variant destination: { 'coord': '', 'name': '' }
+    property variant destination
 
     property bool destination_valid : (suggestionModel.count > 0)
     property bool isFavorite : false
@@ -63,7 +61,7 @@ Column {
     height: firstRow.height * 2
     width: parent.width
 
-    signal locationDone(string name, string coord)
+    signal locationDone(variant locationObject)
     signal locationError()
 
     Component.onCompleted: {
@@ -72,7 +70,7 @@ Column {
     }
 
     function clear() {
-        suggestionModel.source = ""
+        suggestionModel.clear()
         textfield.text = 'Select'
         destination = undefined
         locationDone("","")
@@ -85,33 +83,17 @@ Column {
     }
 
     function updateLocation(object) {
-        suggestionModel.source = ""
-        var address = object.name.split(',', 1).toString()
-        var housenumber = object.housenumber
-        if(housenumber && address.slice(address.length - housenumber.length) != housenumber)
-            address += " " + housenumber
-
         destination = object
-        destination.fullname = address
-
-        textfield.text = address
-        isFavorite = Favorites.favoritExists(object.coord)
-        locationDone(address, object.coord)
+        destination.fullname = label
+        textfield.text = object.name
+        locationDone(object)
     }
 
     function updateCurrentLocation(object) {
-        currentLocationModel.source = ""
-        var address = object.name.split(',', 1).toString()
-
-        if(object.housenumber && address.slice(address.length - object.housenumber.length) != object.housenumber)
-            address += " " + object.housenumber
-
-        destination = object
-        destination.fullname = address
-
-        textfield.text = address
-        isFavorite = Favorites.favoritExists(object.coord)
-        locationDone(address, object.coord)
+        current_name = object.label
+        current_coord = object.coord
+        textfield.placeholderText = object.name
+        currentLocationDone(object)
     }
 
     Timer {
@@ -136,9 +118,10 @@ Column {
             gpsTimer.stop()
             previousCoord.coordinate.latitude = positionSource.position.coordinate.latitude
             previousCoord.coordinate.longitude = positionSource.position.coordinate.longitude
-            currentLocationModel.source = Reittiopas.get_reverse_geocode(previousCoord.coordinate.latitude.toString(),
-                                                  previousCoord.coordinate.longitude.toString(),
-                                                        Storage.getSetting('api'))
+            Reittiopas.get_reverse_geocode(previousCoord.coordinate.latitude.toString(),
+                                           previousCoord.coordinate.longitude.toString(),
+                                           suggestionModel,
+                                           Storage.getSetting('api'))
         } else {
             /* poll again in 200ms */
             gpsTimer.start()
@@ -159,18 +142,13 @@ Column {
         }
     }
 
-    XmlListModel {
+    ListModel {
         id: currentLocationModel
-        query: "/response/node"
-        XmlRole { name: "name"; query: "name/string()" }
-        XmlRole { name: "city"; query: "city/string()" }
-        XmlRole { name: "coord"; query: "coords/string()" }
-        XmlRole { name: "shortCode"; query: "shortCode/string()" }
-        XmlRole { name: "housenumber"; query: "details/houseNumber/string()" }
+        property bool done: true
 
-        onStatusChanged: {
-            if(status == XmlListModel.Ready && source != "") {
-                /* if only result, take it into use */
+        onDoneChanged: {
+            if (done) {
+                /* There should be always just one result since query size=1 */
                 if(currentLocationModel.count > 0) {
                     updateCurrentLocation(currentLocationModel.get(0))
                 }
@@ -178,36 +156,36 @@ Column {
         }
     }
 
-    XmlListModel {
+    ListModel {
         id: suggestionModel
-        query: "/response/node"
-        XmlRole { name: "name"; query: "name/string()" }
-        XmlRole { name: "city"; query: "city/string()" }
-        XmlRole { name: "coord"; query: "coords/string()" }
-        XmlRole { name: "shortCode"; query: "shortCode/string()" }
-        XmlRole { name: "housenumber"; query: "details/houseNumber/string()" }
-        XmlRole { name: "locationType"; query: "locType/string()" }
-        onStatusChanged: {
-            if(status == XmlListModel.Ready && source != "") {
+        property bool done: true
+
+        onDoneChanged: {
+            if (done) {
                 /* if only result, take it into use */
                 if(suggestionModel.count == 1) {
-                    positionFound: true
-                    gpsLoading: false
                     updateLocation(suggestionModel.get(0))
-                } else if (suggestionModel.count == 0) {
-                    appWindow.useNotification( qsTr("No results") )
                 } else {
                     /* just update the first result to main page */
-                    isFavorite = Favorites.favoritExists(suggestionModel.get(0).coord)
-                    locationDone(suggestionModel.get(0).name.split(',', 1).toString(),suggestionModel.get(0).coord)
+                    locationDone(suggestionModel.get(0))
                 }
-            } else if (status == XmlListModel.Error) {
-                selected_favorite = -1
-                isFavorite = false
-                suggestionModel.source = ""
-                locationDone("", 0, "")
-                locationError()
-                appWindow.useNotification( qsTr("Could not find location") )
+            }
+        }
+    }
+
+    ListModel {
+        id: gpsLoc
+        property bool done: true
+
+        onDoneChanged: {
+            if (done) {
+                /* if only result, take it into use */
+                if(suggestionModel.count == 1) {
+                    updateLocation(suggestionModel.get(0))
+                } else {
+                    /* just update the first result to main page */
+                    locationDone(suggestionModel.get(0))
+                }
             }
         }
     }
@@ -226,7 +204,7 @@ Column {
         triggeredOnStart: false
         onTriggered: {
             if(textfield.acceptableInput) {
-                suggestionModel.source = Reittiopas.get_geocode(textfield.text, Storage.getSetting('api'))
+                Reittiopas.get_geocode(textfield.text, suggestionModel, Storage.getSetting('api'))
             }
         }
     }
@@ -239,7 +217,7 @@ Column {
         width: parent.width
         height: textfield.height < (textfield.height/2 + textfield.height/1.5 +sourceLabel.height) ? (textfield.height/2 + textfield.height/1.5 +sourceLabel.height) : textfield.height
         onClicked: {
-            var searchdialog = pageStack.push(Qt.resolvedUrl("../../searchaddress/SearchAddressPage.qml"))
+            var searchdialog = pageStack.push(Qt.resolvedUrl("../../searchaddress/SearchAddressPage.qml"),{model: suggestionModel})
             pageStack.completeAnimation()
             searchdialog.searchType = "source"
             searchdialog.accepted.connect(function() {
@@ -296,19 +274,17 @@ Column {
                 if (positionSource.supportedPositioningMethods !== PositionSource.NoPositioningMethods) {
                     gpsLoading = true
                     if(positionSource.position.latitudeValid && positionSource.position.longitudeValid) {
-                        suggestionModel.source = Reittiopas.get_reverse_geocode(positionSource.position.coordinate.latitude.toString(),
-                                                                                positionSource.position.coordinate.longitude.toString(),
-                                                                                Storage.getSetting('api'))
-                        positionFound: true
+                        Reittiopas.get_reverse_geocode(positionSource.position.coordinate.latitude.toString(),
+                                                       positionSource.position.coordinate.longitude.toString(),
+                                                       gpsLoc,
+                                                       Storage.getSetting('api'))
                         gpsLoading: false
                     } else {
-                        positionFound: false
                         gpsLoading: false
                         appWindow.useNotification(qsTr("Positioning service not available"))
                     }
                 }
                 else {
-                    positionFound: false
                     gpsLoading: false
                     appWindow.useNotification(qsTr("Positioning service not available"))
                 }
@@ -388,8 +364,8 @@ Column {
             onClicked: {
                 onClicked: { var mapDialog = pageStack.push(Qt.resolvedUrl("../../dialogs/MapDialog.qml"),
                                                             {
-                                                                inputCoord:destination.coord ? destination.coord : '',
-                                                                resultName:destination.fullname ? destination.fullname : ''})
+                                                                inputCoord:destination ? destination.coord : '',
+                                                                resultName:destination ? destination.fullname : ''})
                     mapDialog.accepted.connect(function() {
                         updateLocation(mapDialog.resultObject)
                     })

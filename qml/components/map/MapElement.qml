@@ -480,72 +480,70 @@ Item {
         vehicleUpdateTimer.start()
 
         Helper.clear_objects()
-        var current_route = Reittiopas.get_route_instance()
         vehicleModel.vehicleCodesToShowOnMap = []
 
+        var iterModelLegs = appWindow.itinerariesModel.get(0).legs
         // Add startPoint to the map
-        add_station2(current_route.last_result[0].legs[0].from, current_route.last_result[0].legs[0].from.name)
-        flickable_map.start_point.coordinate.longitude = current_route.last_result[0].legs[0].from.longitude
-        flickable_map.start_point.coordinate.latitude = current_route.last_result[0].legs[0].from.latitude
+        add_station2(iterModelLegs.get(0).from, iterModelLegs.get(0).from.name)
+        flickable_map.start_point.coordinate.longitude = iterModelLegs.get(0).from.longitude
+        flickable_map.start_point.coordinate.latitude = iterModelLegs.get(0).from.latitude
 
 
         // Add all the routes and vehicles to the map, ResultMapPage shows content for all the 5 routes,
         // last 4 with thinner line
         if (multipleRoutes === true) {
-            for (var result in current_route.last_result) {
-                add_route_to_map(current_route.last_result[result], result)
+            var countOfRoutes = appWindow.itinerariesModel.count;
+            for (var routeIndex = 0; routeIndex < countOfRoutes; ++routeIndex) {
+                add_route_to_map(routeIndex)
             }
         }
-        else {
-            var index = current_route.get_current_route_index()
-            // Passing index == 0 prints with normal line width
-            add_route_to_map(current_route.last_result[index], 0)
+        else if (appWindow.itinerariesIndex >= 0) {
+                add_route_to_map(appWindow.itinerariesIndex)
         }
 
         // Add endPoint to the map
-        add_station2(current_route.last_result[0].legs[current_route.last_result[0].legs.length - 1].to,
-                     current_route.last_result[0].legs[current_route.last_result[0].legs.length - 1].to.name)
-        flickable_map.end_point.coordinate.longitude =
-                current_route.last_result[0].legs[current_route.last_result[0].legs.length - 1].to.longitude
-        flickable_map.end_point.coordinate.latitude =
-                current_route.last_result[0].legs[current_route.last_result[0].legs.length - 1].to.latitude
+        var countOfLegs = iterModelLegs.count
+        add_station2(iterModelLegs.get(countOfLegs - 1).to, iterModelLegs.get(countOfLegs - 1).to.name)
+
+        flickable_map.end_point.coordinate.longitude = iterModelLegs.get(countOfLegs - 1).to.longitude
+        flickable_map.end_point.coordinate.latitude = iterModelLegs.get(countOfLegs - 1).to.latitude
     }
 
-    function add_route_to_map(route, index) {
-        for (var leg in route.legs) {
-
+    function add_route_to_map(route_index) {
+        var countOfLegs = appWindow.itinerariesModel.get(route_index).legs.count
+        for (var legindex = 0; legindex < countOfLegs; ++legindex) {
+            var legdata = appWindow.itinerariesModel.get(route_index).legs.get(legindex)
             var paths = []
-            add_station2(route.legs[leg].to,
-                         route.legs[leg].to.name)
+            add_station2(legdata.to,
+                         legdata.name)
+            var coordinates = decodePolyline(legdata.polyline)
 
-            for(var shapeindex in route.legs[leg].shape) {
-                var shapedata = route.legs[leg].shape[shapeindex]
-                paths.push({"longitude": shapedata.x, "latitude": shapedata.y})
+            for(var coordinateIndex = 0; coordinateIndex < coordinates.length; ++ coordinateIndex) {
+                paths.push({"longitude": coordinates[coordinateIndex][1], "latitude": coordinates[coordinateIndex][0]})
             }
 
             var p = polyline_component.createObject(flickable_map)
             p.line.color =
-                    Theme.theme['general'].TRANSPORT_COLORS[route.legs[leg].type]
+                    Theme.theme['general'].TRANSPORT_COLORS[legdata.type]
             p.path = paths
 
             // Print all 4 later route options with thinner line
-            if (index > 0) {
+            if (route_index > 0) {
                 p.line.width *= 0.5;
             }
 
             flickable_map.addMapItem(p)
 
-            if (route.legs[leg].type !== "walk") {
+            if (legdata.type !== "walk") {
                 vehicleModel.vehicleCodesToShowOnMap.push(
-                            {"type": route.legs[leg].type,
-                                "code": route.legs[leg].code})
+                            {"type": legdata.type,
+                                "code": legdata.code})
             }
-            if(route.legs[leg].type !== "walk") {
-                for(var stopindex in route.legs[leg].locs) {
-                    var loc = route.legs[leg].locs[stopindex]
-
-                    if(stopindex !== 0 && stopindex !== route.legs[leg].locs.length - 1)
-                        add_stop2(loc.latitude, loc.longitude)
+            if(legdata.type !== "walk") {
+                var countOfStops = appWindow.itinerariesModel.get(route_index).legs.get(legindex).locs.count
+                for(var stopindex = 0; stopindex < countOfStops; ++stopindex) {
+                    var loc = legdata.locs.get(stopindex)
+                    add_stop2(loc.latitude, loc.longitude)
                 }
             }
         }
@@ -585,5 +583,54 @@ Item {
         coord.longitude = longitude
         stop_object.coordinate = coord
         Helper.push_to_objects(stop_object)
+    }
+
+    // Adapted from: https://github.com/mapbox/polyline/blob/master/src/polyline.js
+    function decodePolyline(str, precision) {
+        var index = 0,
+            lat = 0,
+            lng = 0,
+            coordinates = [],
+            shift = 0,
+            result = 0,
+            jsbyte = null,
+            latitude_change,
+            longitude_change,
+            factor = Math.pow(10, precision || 5);
+
+        // Coordinates have variable length when encoded, so just keep
+        // track of whether we've hit the end of the string. In each
+        // loop iteration, a single coordinate is decoded.
+        while (index < str.length) {
+
+            // Reset shift, result, and jsbyte
+            jsbyte = null;
+            shift = 0;
+            result = 0;
+
+            do {
+                jsbyte = str.charCodeAt(index++) - 63;
+                result |= (jsbyte & 0x1f) << shift;
+                shift += 5;
+            } while (jsbyte >= 0x20);
+
+            latitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+            shift = result = 0;
+
+            do {
+                jsbyte = str.charCodeAt(index++) - 63;
+                result |= (jsbyte & 0x1f) << shift;
+                shift += 5;
+            } while (jsbyte >= 0x20);
+
+            longitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+            lat += latitude_change;
+            lng += longitude_change;
+
+            coordinates.push([lat / factor, lng / factor]);
+        }
+        return coordinates;
     }
 }
