@@ -185,8 +185,6 @@ function get_reverse_geocode(latitude, longitude, model, api_type) {
     var size = 1;
     var queryType = 'geocoding/v1/reverse';
     var query = "point.lat=" + latitude + "&point.lon=" + longitude + "&size=" + size;
-
-//    console.debug(API['digitransitgeocoding'].URL + queryType + '?' + query);
     var http_request = new XMLHttpRequest();
     http_request.open("GET", API['digitransitgeocoding'].URL + queryType + '?' + query);
     http_request.onreadystatechange = function() {
@@ -251,7 +249,7 @@ function get_route(parameters, itineraries_model, itineraries_json, api_type) {
             + graphqlTime + '",numItineraries:' + graphqlNumberOfItinaries
             + ',modes:"' + parameters.modes + '",minTransferTime:'
             + graphqlTransferTime + ',walkSpeed:' + graphqlWalkSpeed + graphqlArriveBy
-            + '){itineraries{walkDistance,duration,startTime,endTime,legs{mode route{shortName} duration startTime endTime from{lat lon name stop{code name}},intermediateStops{lat lon code name},to{lat lon name stop{code name}},distance, legGeometry{points}}}}}';
+            + '){itineraries{walkDistance,duration,startTime,endTime,legs{mode route{shortName,gtfsId} duration startTime endTime from{lat lon name stop{code name}},intermediateStops{lat lon code name},to{lat lon name stop{code name}},distance, legGeometry{points}}}}}';
 
 //    console.debug(query);
     var http_request = new XMLHttpRequest();
@@ -261,7 +259,6 @@ function get_route(parameters, itineraries_model, itineraries_json, api_type) {
     http_request.onreadystatechange = function() {
         if (http_request.readyState === XMLHttpRequest.DONE) {
             itineraries_json = JSON.parse(http_request.responseText);
-//            console.debug("Query json result: " + JSON.stringify(itineraries_json));
             for (var index in itineraries_json.data.plan.itineraries) {
                 var output = {}
                 var route = itineraries_json.data.plan.itineraries[index]
@@ -278,6 +275,7 @@ function get_route(parameters, itineraries_model, itineraries_json, api_type) {
                     output.legs[leg] = {
                         "type": legdata.mode.toLowerCase(),
                         "code": legdata.route ? legdata.route.shortName : "",
+                        "orgcode": legdata.route ? legdata.route.gtfsId : "",
                         "shortCode": legdata.from.stop ? legdata.from.stop.name : "",
                         "length": legdata.distance,
                         "polyline": legdata.legGeometry.points,
@@ -586,4 +584,54 @@ location_to_address.prototype.positioning_handler = function() {
         _request_parent.model.append(output)
     }
     _request_parent.model.done = true
+}
+
+function topic2object(topic_str){
+    /*
+    MQTT Topic objectifier.
+    SOURCE: https://digitransit.fi/en/developers/apis/4-realtime-api/vehicle-positions/
+
+    prefix          /hfp/ is the root of the topic tree.
+    version         v1 is the current version of the HFP topic and the payload format.
+    temporal_type	The type of the journey, ongoing or upcoming. ongoing describes the current situation. upcoming refers to the next expected journey of the same vehicle. upcoming messages are broadcasted shortly before the start of the next journey. One use of upcoming is to show the relevant vehicle to your users even before the driver has signed on to the journey that your users are interested in. upcoming is not working properly yet, though.
+    transport_mode	The type of the vehicle. One of bus, tram or train. The metro, the ferries and the U-line busses are not supported. Due to a bug some replacement busses for tram lines have tram as their type. We are working on it.
+    operator_id     The unique ID of the operator that owns the vehicle.
+    vehicle_number	The vehicle number that can be seen painted on the side of the vehicle, often next to the front door. Different operators may use overlapping vehicle numbers. operator_id/vehicle_number uniquely identifies the vehicle.
+    route_id        This matches route_id in GTFS. Due to a bug some rare “number variants” do not match GTFS properly. We are working on it.
+    direction_id	The line direction of the trip. Matches direction_id in GTFS. Either 1 or 2.
+    headsign        The destination name, e.g. Aviapolis. Note: This does NOT match trip_headsign in GTFS exactly.
+    start_time      The scheduled start time of the trip, i.e. the scheduled departure time from the first stop of the trip. The format follows %H:%M in 24-hour local time, not the 30-hour overlapping operating days present in GTFS.
+    next_stop       The next stop or station. Updated on each departure from or passing of a stop. EOL (end of line) after final stop. Matches stop_id in GTFS.
+    geohash_level	The geohash level represents the magnitude of change in the GPS coordinates since the previous message from the same vehicle. More exactly, geohash_level is equal to the minimum of the digit positions of the most significant changed digit in the latitude and the longitude since the previous message. For example, if the previous message has value (60.12345, 25.12345) for (lat, long) and the current message has value (60.12499, 25.12388), then the third digit of the fractional part is the most significant changed digit and geohash_level has value 3.
+                    However, geohash_level value 0 is overloaded. geohash_level is 0 if:
+                    the integer part of the latitude or the longitude has changed,
+                    the previous or the current message has null for coordinates or
+                    the non-location parts of the topic have changed, e.g. when a bus departs from a stop.
+                    By subscribing to specific geohash levels, you can reduce the amount of traffic into the client. By only subscribing to level 0 the client gets the most important status changes. The rough percentages of messages with a specific geohash_level value out of all ongoing messages are:
+                    0: 3 %
+                    1: 0.09 %
+                    2: 0.9 %
+                    3: 8 %
+                    4: 43 %
+                    5: 44 %
+    geohash         The latitude and the longitude of the vehicle. The digits of the integer parts are separated into their own level in the format <lat>;<long>, e.g. 60;24. The digits of the fractional parts are split and interleaved into a custom format so that e.g. (60.123, 24.789) becomes 60;24/17/28/39. This format enables subscribing to specific geographic boundaries easily.
+                    If the coordinates are missing, geohash_level and geohash have the concatenated value 0////.
+                    Currently only 3 digits of the fractional part are published in the topic for both the latitude and the longitude even though geohash_level currently has precision up to 5 digits of the fractional part. As a form of future proofing your subscriptions, do not rely on the amount of fractional digits present in the topic. Instead, use the wildcard # at the end of topic filters.
+                    This geohash scheme is greatly simplified from the original geohash scheme.*/
+    var topicArr = topic_str.split("/").slice(1);
+    return {
+        prefix: topicArr[0],
+        version: topicArr[1],
+        temporal_type: topicArr[3],
+        transport_mode: topicArr[4],
+        operator_id: topicArr[5],
+        vehicle_number: topicArr[6],
+        route_id: topicArr[7],
+        direction_id: topicArr[8],
+        headsign: topicArr[9],
+        start_time: topicArr[10],
+        next_stop: topicArr[11],
+        geohash_level: topicArr[12],
+        geohash: topicArr[13],
+    }
 }

@@ -175,3 +175,21 @@ function timestampDifferenceInSeconds(arrDate, depDate) {
     var seconds = Math.round((depDateObject-arrDateObject)/1000);
     return seconds
 }
+
+function objectIndex(objects, prop, value) {
+    for(var i=0; i < objects.count; i++) {
+        if(objects.get(i)[prop] === value) {
+            return i;
+        }
+    }
+    return -1;
+}
+function arrIndex(arr, prop, value) {
+    for(var i in arr) {
+        console.log(arr[i][prop] === value, value,arr[i][prop])
+        if(arr[i][prop] === value) {
+            return i;
+        }
+    }
+    return -1;
+}

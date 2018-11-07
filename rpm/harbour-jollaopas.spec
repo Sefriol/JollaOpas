@@ -6,6 +6,9 @@
 Name:       harbour-jollaopas
 
 # >> macros
+%define __provides_exclude_from ^%{_datadir}/.*$
+#
+%define __requires_exclude ^libqtmqtt.*$
 # << macros
 
 %{!?qtc_qmake:%define qtc_qmake %qmake}
@@ -13,7 +16,7 @@ Name:       harbour-jollaopas
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Journey planner for Helsinki and Tampere area
-Version:    0.8.0
+Version:    0.8.1
 Release:    1
 Group:      Qt/Qt
 License:    GPLv3
