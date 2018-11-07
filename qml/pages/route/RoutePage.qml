@@ -111,12 +111,12 @@ Page {
                             object.code = leg.code
                             object.duration = leg.duration
                             break
-                        case 'train':
+                        case 'rail':
                             object.code = leg.code
                             object.duration = leg.duration
                             object.type = type
                             break
-                        case 'metro':
+                        case 'subway':
                             object.code = leg.code
                             object.duration = leg.duration
                             object.type = type
