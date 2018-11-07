@@ -174,23 +174,6 @@ Column {
     }
 
     ListModel {
-        id: gpsLoc
-        property bool done: true
-
-        onDoneChanged: {
-            if (done) {
-                /* if only result, take it into use */
-                if(suggestionModel.count == 1) {
-                    updateLocation(suggestionModel.get(0))
-                } else {
-                    /* just update the first result to main page */
-                    locationDone(suggestionModel.get(0))
-                }
-            }
-        }
-    }
-
-    ListModel {
         id: favoritesModel
     }
 
@@ -276,7 +259,7 @@ Column {
                     if(positionSource.position.latitudeValid && positionSource.position.longitudeValid) {
                         Reittiopas.get_reverse_geocode(positionSource.position.coordinate.latitude.toString(),
                                                        positionSource.position.coordinate.longitude.toString(),
-                                                       gpsLoc,
+                                                       suggestionModel,
                                                        Storage.getSetting('api'))
                         gpsLoading: false
                     } else {

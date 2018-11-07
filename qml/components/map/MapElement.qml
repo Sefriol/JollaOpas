@@ -32,7 +32,7 @@
 import QtQuick 2.1
 import QtLocation 5.0
 import QtPositioning 5.3
-import Sailfish.Silica 1.0
+import MqttClient 1.0
 import "qrc:/reittiopas.js" as Reittiopas
 import "qrc:/sirilive.js" as Sirilive
 import "qrc:/storage.js" as Storage
@@ -46,13 +46,34 @@ Item {
     property alias flickable_map : flickable_map
     property bool findLocation: false
     property variant selectedCoord
+    //property variant func: updateFunc()
+    MqttClient {
+        id: mqttClient
+        hostname: 'mqtt.hsl.fi'
+        property var subs: []
+    }
+    Component.onDestruction: {
+        if (appWindow.currentApi === "helsinki") {
+            mqttClient.disconnectFromHost()
+        }
+    }
     Connections {
         target: Qt.application
-        onActiveChanged:
-            if(Qt.application.active) { vehicleUpdateTimer.start() }
-            else { vehicleUpdateTimer.stop() }
+        onActiveChanged: {
+            if(Qt.application.active) {
+                vehicleUpdateTimer.start()
+            }
+            else {
+                vehicleModel.clear()
+                if (appWindow.currentApi !== "helsinki") {
+                    vehicleUpdateTimer.stop()
+                }
+                else {
+                    mqttClient.disconnectFromHost()
+                }
+            }
+        }
     }
-
     function next_station() {
         flickable_map.panToCoordinate(Helper.next_station())
     }
@@ -69,9 +90,41 @@ Item {
         flickable_map.map.removeMapObject(root_group)
     }
 
-    function receiveVehicleLocation() {
-        Sirilive.new_live_instance(vehicleModel, Storage.getSetting('api'))
+    function addMqttVehicle(topic, payload) {
+        var vehicle_json = JSON.parse(payload).VP
+        var vehicleUniqueId = vehicle_json.oper + vehicle_json.veh;
+        var index = Helper.objectIndex(vehicleModel,"modelUniqueId", vehicleUniqueId)
+        if (index !== -1){
+            vehicleModel.remove(index)
+        }
 
+        var vehicleTopic = Reittiopas.topic2object(topic)
+        // Mqtt API doesn't support subway or ferry yet so leave those colors out for now
+        var color = vehicle_json.dir === "1" ? "#08a7cc" : "#cc2d08"
+        switch(vehicleTopic.transport_mode) {
+            case "bus": /*Use default color for bus*/
+                break;
+            case "tram": /*Tram*/
+                color = "#925bc6";
+                break
+            case "rail": /*Train*/
+                color = "#61b700";
+                break
+        }
+        vehicleModel.append({
+            "modelUniqueId": vehicleUniqueId,
+            "modelLongitude": vehicle_json.long,
+            "modelLatitude": vehicle_json.lat,
+            "modelCode": vehicle_json.desi,
+            "modelColor": color,
+            "modelBearing": vehicle_json.hdg,
+            "modelSpeed": Math.round(vehicle_json.spd * 3.6)
+        })
+        vehicleModel.timeStamp = new Date(vehicle_json.tst).getTime()
+    }
+    function receiveVehicleLocation(topic, payload) {
+        if (appWindow.currentApi !== "helsinki") Sirilive.new_live_instance(vehicleModel, Storage.getSetting('api'))
+        else addMqttVehicle(topic, payload)
         var epochTime = vehicleModel.timeStamp
 
         if (!epochTime) {
@@ -82,10 +135,10 @@ Item {
         var timeDifference = Date.now() - epochTime
         timeDifference /= 1000  // Convert milliseconds to seconds
 
-        if (timeDifference > 0 && timeDifference < 60) {
+        if (timeDifference > 0.5 && timeDifference < 60) {
             flickable_map.timeStamp.text = qsTr(" Updated ") + Math.round(timeDifference) + qsTr(" s ago ")
         }
-        else {
+        else if (timeDifference > 60) {
             var updatedDate = new Date(0)
 
             if (updatedDate.getTimezoneOffset() < 180) {
@@ -122,10 +175,30 @@ Item {
 
     Timer {
         id: vehicleUpdateTimer
-        interval: 2000
-        repeat: true
+        interval: appWindow.currentApi !== "helsinki" ? 2000 : 300
+        repeat: appWindow.currentApi !== "helsinki"
         onTriggered: {
-            receiveVehicleLocation()
+            if (appWindow.currentApi !== "helsinki") {
+                receiveVehicleLocation()
+            }
+            else {
+                mqttClient.port = "443"
+                mqttClient.connectToHost()
+                for (var index in vehicleModel.vehicleCodesToShowOnMap)
+                {
+                    var topic = "/hfp/v1/journey/ongoing/"
+                    var allowedVehicleCode = vehicleModel.vehicleCodesToShowOnMap[index].code
+                    // Bus lines have prefixes like HSL:1052,
+                    // which are not present in the realtime API
+                    allowedVehicleCode = allowedVehicleCode.replace(/.*:/, '')
+                    topic += vehicleModel.vehicleCodesToShowOnMap[index].type + '/+/+/'
+                    topic += allowedVehicleCode + '/'
+                    topic += '#'
+                    var subscription = mqttClient.subscribe(topic)
+                    subscription.messageReceived.connect(receiveVehicleLocation)
+                    mqttClient.subs.push(subscription)
+                }
+            }
         }
     }
 
@@ -206,10 +279,20 @@ Item {
                     width: 50
                     height: 50
                     Text {
+                        id: lineCodeText
                         anchors.centerIn: parent
+                        anchors.verticalCenterOffset: appWindow.currentApi === "helsinki" ? -8 : 0
                         font.pixelSize: 20
                         font.bold: true
                         text: modelCode
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        anchors.verticalCenterOffset: 8
+                        text: appWindow.currentApi === "helsinki" ? modelSpeed + "km/h" : ""
+                        visible: appWindow.currentApi === "helsinki"
+                        font.pixelSize: 12
+                        font.bold: true
                     }
                     Image {
                         source: "qrc:/images/bearing_indicator.png"
@@ -405,73 +488,12 @@ Item {
             z: 45
         }
     }
-/*
-    Component {
-        id: endpoint
-        MapQuickItem {
-            sourceItem: Image {
-                smooth: true
-                height: 50 * appWindow.scalingFactor
-                width: 50 * appWindow.scalingFactor
-            }
-            anchorPoint.y: sourceItem.height - 5
-            anchorPoint.x: sourceItem.width / 2
-            z: 50
-        }
-    }
-*/
-/*
-    Component {
-        id: group
 
-        MapGroup {
-            id: stop_group
-            property alias station_text : station_text
-            property alias station : station
-            property alias route : route
-
-            MapText {
-                id: station_text
-                smooth: true
-                font.pixelSize: UIConstants.FONT_LARGE * appWindow.scalingFactor
-                offset.x: -(width/2)
-                offset.y: 18
-                z: 48
-            }
-
-            MapImage {
-                id: station
-                sourceItem: Image {
-                    smooth: true
-                    source: "qrc:/images/stop.png"
-                    height: 30 * appWindow.scalingFactor
-                    width: 30 * appWindow.scalingFactor
-                }
-// TODO:
-//                offset.y: sourceItem.height / 2
-//                offset.x: sourceItem.width / 2
-                z: 45
-            }
-            MapPolyline {
-                id: route
-                smooth: true
-                border.width: 8 * appWindow.scalingFactor
-                z: 30
-            }
-        }
-    }
-*/
     function getLocationInitialize(coord, input){
         var array = coord.split(',')
         flickable_map.panToCoordinate(QtPositioning.coordinate(array[1],array[0]))
         flickable_map.addMapItem(press_position)
         flickable_map.addMapItem(current_position)
-//        console.log(current_position.coordinate,
-//                    current_position.visible,
-//                    positionSource.position.latitudeValid,
-//                    positionSource.position.longitudeValid,
-//                    positionSource.position.horizontalAccuracy > 0,
-//                    positionSource.position.horizontalAccuracy < 100)
     }
 
     function initialize(multipleRoutes) {
@@ -535,9 +557,10 @@ Item {
             flickable_map.addMapItem(p)
 
             if (legdata.type !== "walk") {
-                vehicleModel.vehicleCodesToShowOnMap.push(
-                            {"type": legdata.type,
-                                "code": legdata.code})
+                vehicleModel.vehicleCodesToShowOnMap.push({
+                    "type": legdata.type,
+                    "code": legdata.orgcode
+                })
             }
             if(legdata.type !== "walk") {
                 var countOfStops = appWindow.itinerariesModel.get(route_index).legs.get(legindex).locs.count

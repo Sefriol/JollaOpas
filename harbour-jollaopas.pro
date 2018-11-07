@@ -111,20 +111,3 @@ include(common.pri)
 configure($${PWD}/qml/pages/dialogs/AboutDialog.qml.in)
 
 desktop.files = harbour-jollaopas.desktop
-
-DISTFILES += \
-#    qml/components/SpaceSeparator.qml \
-#    qml/components/DateSwitch.qml \
-#    qml/pages/LocationMapPage.qml \
-#    qml/pages/SearchAddressPage.qml \
-#    qml/components/StatusIndicatorCircle.qml \
-#    qml/components/LocationCircle.qml
-#    qml/components/CoverTime.qml \
-#    qml/components/CustomBottomDrawer.qml \
-#    qml/components/Clock.qml \
-#    qml/components/qmldir \
-#    qml/pages/qmldir \
-#    qml/js/qmldir \
-#    qml/pages/settings/components/TextIconSwitch.qml \
-#    qml/pages/TestPage.qml
-    qml/pages/dialogs/MqttDialog.qml
