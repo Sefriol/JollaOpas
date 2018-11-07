@@ -48,29 +48,29 @@ Page {
         Component.onCompleted: {
             Storage.initialize()
             var setting = Storage.getSetting("api")
-            currentApi.set_value(setting == "Unknown"?"helsinki" : setting)
+            currentApi.set_value(setting === "Unknown"?"helsinki" : setting)
             setting = Storage.getSetting("tram_disabled")
-            tramSwitch.set_value(setting == "Unknown"?"false" : setting)
+            tramSwitch.set_value(setting === "Unknown"?"false" : setting)
             setting = Storage.getSetting("bus_disabled")
-            busSwitch.set_value(setting == "Unknown"?"false" : setting)
+            busSwitch.set_value(setting === "Unknown"?"false" : setting)
             setting = Storage.getSetting("uline_disabled")
-            ulineSwitch.set_value(setting == "Unknown"?"false" : setting)
+            ulineSwitch.set_value(setting === "Unknown"?"false" : setting)
             setting = Storage.getSetting("service_disabled")
-            serviceSwitch.set_value(setting == "Unknown"?"false" : setting)
+            serviceSwitch.set_value(setting === "Unknown"?"false" : setting)
             setting = Storage.getSetting("metro_disabled")
-            metroSwitch.set_value(setting == "Unknown"?"false" : setting)
+            metroSwitch.set_value(setting === "Unknown"?"false" : setting)
             setting = Storage.getSetting("train_disabled")
-            trainSwitch.set_value(setting == "Unknown"?"false" : setting)
+            trainSwitch.set_value(setting === "Unknown"?"false" : setting)
             setting = Storage.getSetting("optimize")
-            optimizeRoute.set_value(setting == "Unknown"?"default" : setting)
+            optimizeRoute.set_value(setting === "Unknown"?"default" : setting)
             setting = Storage.getSetting("walking_speed")
-            walkingSpeed.set_value(setting == "Unknown"?"70" : setting)
+            walkingSpeed.set_value(setting === "Unknown"?"70" : setting)
             setting = Storage.getSetting("change_margin")
-            changeMargin.set_value(setting == "Unknown"?"3" : Math.floor(setting))
+            changeMargin.set_value(setting === "Unknown"?"3" : Math.floor(setting))
             setting = Storage.getSetting("default_zoom_level")
-            defaultZoomLevel.set_value(setting == "Unknown"?"5" : Math.floor(setting))
+            defaultZoomLevel.set_value(setting === "Unknown"?"5" : Math.floor(setting))
             setting = Storage.getSetting("search_button_disabled")
-            searchButtonSwitch.set_value(setting == "Unknown"?"false" : setting)
+            searchButtonSwitch.set_value(setting === "Unknown"?"false" : setting)
         }
 
         PullDownMenu {
@@ -140,7 +140,7 @@ Page {
             TextIconSwitch {
                 id: ulineSwitch
                 visible: appWindow.currentApi === "helsinki"
-                source: "qrc:/images/bus.png"
+                source: "qrc:/images/boat.png"
                 description: qsTr("Route results will contain ferry")
                 fdescription: qsTr("Route results will not contain ferry")
 
@@ -189,7 +189,7 @@ Page {
             TextIconSwitch {
                 id: metroSwitch
                 visible: appWindow.currentApi === "helsinki"
-                source: "qrc:/images/metro.png"
+                source: "qrc:/images/subway.png"
                 description:  qsTr("Route results will contain Metro")
                 fdescription:  qsTr("Route results will not contain Metro")
 
@@ -205,7 +205,7 @@ Page {
             TextIconSwitch {
                 id: trainSwitch
                 visible: appWindow.currentApi === "helsinki"
-                source: "qrc:/images/train.png"
+                source: "qrc:/images/rail.png"
                 description:  qsTr("Route results will contain Trains")
                 fdescription:  qsTr("Route results will not contain Trains")
 

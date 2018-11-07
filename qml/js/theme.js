@@ -90,8 +90,8 @@ theme['general'] = {}
 theme['general'].TRANSPORT_COLORS = {}
 theme['general'].TRANSPORT_COLORS.walk = "#767676"
 theme['general'].TRANSPORT_COLORS.bus = "#08a7cc"
-theme['general'].TRANSPORT_COLORS.train = "#61b700"
-theme['general'].TRANSPORT_COLORS.metro = "#ee5400"
+theme['general'].TRANSPORT_COLORS.rail = "#61b700"
+theme['general'].TRANSPORT_COLORS.subway = "#ee5400"
 theme['general'].TRANSPORT_COLORS.ferry = "#0080c8"
 theme['general'].TRANSPORT_COLORS.tram = "#925bc6"
 
